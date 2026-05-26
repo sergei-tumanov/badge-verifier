@@ -1,0 +1,3250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badge Verifier</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --canvas: #fafafa;
+  --panel: #f6f7f8;
+  --row-h: 28px;
+  --gap-row-h: 22px;
+  --text: #111827;
+  --text2: #6b7280;
+  --text3: #9ca3af;
+  --border: #e5e7eb;
+  --border-2: #eef0f3;
+  --hover-bg: #f3f4f6;
+  --row-active: #eff6ff;
+  --accent: #2563eb;
+  --c-manager: #2563eb;
+  --c-client: #ea580c;
+  --c-staff: #16a34a;
+  --c-unknown: #9ca3af;
+  --c-miss-bg: rgba(251, 191, 36, 0.18);
+  --c-miss-bg-empty: rgba(251, 191, 36, 0.08);
+  --c-extra-bg: rgba(99, 102, 241, 0.13);
+  --c-extra-bg-empty: rgba(99, 102, 241, 0.06);
+  --c-miss-num: #b45309;
+  --c-extra-num: #4f46e5;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ---- HEADER ---- */
+#header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+#logo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text);
+  white-space: nowrap;
+}
+#logo span { color: var(--accent); }
+.h-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+.h-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.h-sel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  min-width: 150px;
+  transition: border-color 0.12s, background 0.12s;
+}
+.h-sel:hover { background: #fff; border-color: #d1d5db; }
+.h-sel:focus { border-color: var(--accent); background: #fff; }
+.h-sel option { background: #fff; color: var(--text); }
+.h-stat {
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.h-stat b { color: var(--text); font-weight: 600; }
+.h-action {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
+}
+.h-action:hover { color: var(--text); background: var(--hover-bg); }
+
+/* nav buttons for jumping between misses/extras */
+.h-nav-grp {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.h-nav-grp.miss-grp { border-color: rgba(180, 83, 9, 0.25); background: rgba(251, 191, 36, 0.08); }
+.h-nav-grp.extra-grp { border-color: rgba(79, 70, 229, 0.25); background: rgba(99, 102, 241, 0.06); }
+.h-nav-grp .h-nav-lbl { padding: 0 2px; user-select: none; }
+.h-nav-grp.miss-grp .h-nav-lbl  { color: var(--c-miss-num); font-weight: 600; }
+.h-nav-grp.extra-grp .h-nav-lbl { color: var(--c-extra-num); font-weight: 600; }
+.h-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1;
+}
+.h-nav-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+.h-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* save indicator */
+#save-state {
+  font-size: 10px;
+  color: var(--text3);
+  white-space: nowrap;
+  transition: opacity 0.3s;
+  font-variant-numeric: tabular-nums;
+}
+#save-state.flash { color: var(--c-staff); }
+
+/* ---- TIMELINE ---- */
+#timeline-wrap {
+  height: 8px;
+  background: var(--border-2);
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+}
+.tl-clip {
+  position: absolute;
+  height: 100%;
+  background: #34d399;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.tl-clip:hover, .tl-clip.sel { opacity: 1; }
+.tl-gap {
+  position: absolute;
+  height: 100%;
+  background: #fef3c7;
+}
+#tl-tooltip {
+  position: fixed;
+  background: #1f2937;
+  color: #f9fafb;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 999;
+  max-width: 280px;
+  line-height: 1.5;
+  display: none;
+  white-space: pre-line;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ---- LAYOUT ---- */
+#layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---- META PANELS ---- */
+.meta-panel {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 0;
+}
+#left-meta { border-right: 1px solid var(--border); padding: 12px 14px; gap: 10px; background: var(--panel); }
+#right-meta { border-left: 1px solid var(--border); padding: 12px 0 12px 0; background: var(--panel); }
+
+.meta-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.meta-filename {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+.meta-sub {
+  font-size: 11px;
+  color: var(--text2);
+}
+.meta-btn {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.15s;
+}
+.meta-btn:hover { color: var(--text); }
+
+/* clips list */
+#clips-actions {
+  display: flex;
+  gap: 10px;
+  padding: 8px 14px 4px;
+  font-size: 11px;
+}
+.clips-act-btn {
+  color: var(--text2);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  padding: 0;
+  transition: color 0.15s;
+}
+.clips-act-btn:hover { color: var(--text); }
+
+#clips-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 8px;
+}
+.clip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+}
+.clip-row:hover { background: var(--hover-bg); }
+.clip-row.active { background: var(--row-active); border-left: 2px solid var(--accent); padding-left: 12px; }
+.clip-row.active .clip-num { color: var(--accent); font-weight: 600; }
+.clip-cb {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+}
+.clip-cb:hover { border-color: var(--accent); }
+.clip-cb:checked { background: var(--accent); border-color: var(--accent); }
+.clip-cb:checked::after {
+  content: '';
+  position: absolute;
+  left: 2px; top: -1px;
+  width: 8px; height: 10px;
+  border: 2px solid #fff;
+  border-left: none; border-top: none;
+  transform: rotate(45deg) scaleY(0.7);
+  transform-origin: center;
+}
+.clip-num { font-size: 11px; color: var(--text2); width: 16px; text-align: right; flex-shrink: 0; }
+.clip-info { flex: 1; min-width: 0; }
+.clip-range { font-size: 11px; color: var(--text); font-variant-numeric: tabular-nums; }
+.clip-dur { font-size: 10px; color: var(--text2); }
+
+/* ---- CANVASES ---- */
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Unified grid container replacing two separate scrolling canvases */
+#rows-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--canvas);
+  scroll-behavior: auto;
+}
+#rows-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  will-change: transform;
+}
+
+/* ---- ROW TYPES ---- */
+.tr-row {
+  min-height: var(--row-h);
+  display: flex;
+  align-items: flex-start;
+  padding: 5px 10px;
+  position: relative;
+  cursor: default;
+  border-bottom: 1px solid var(--border-2);
+  transition: background 0.08s;
+}
+.tr-row:hover { background: rgba(0,0,0,0.018); }
+.tr-row:hover .row-hover-actions { opacity: 1; }
+/* currently-playing segment indicator */
+.tr-row.active {
+  background: #dbeafe !important;
+  box-shadow: inset 3px 0 0 var(--accent), inset -3px 0 0 var(--accent);
+  position: relative;
+}
+.tr-row.active .tr-time { color: var(--accent); font-weight: 600; }
+.tr-row.clip-border { box-shadow: inset 3px 0 0 var(--accent); padding-left: 9px; }
+
+/* left column border separator */
+.tr-row[data-side="left"], .tr-empty[data-side="left"] {
+  border-right: 1px solid var(--border);
+}
+
+/* unmatched row tints */
+.tr-solo-left  { background: var(--c-miss-bg) !important; }
+.tr-solo-right { background: var(--c-extra-bg) !important; }
+.tr-empty.tr-solo-left  { background: var(--c-miss-bg-empty) !important; }
+.tr-empty.tr-solo-right { background: var(--c-extra-bg-empty) !important; }
+
+/* hover overrides for unmatched */
+.tr-row.tr-solo-left:hover  { background: rgba(251, 191, 36, 0.26) !important; }
+.tr-row.tr-solo-right:hover { background: rgba(99, 102, 241, 0.18) !important; }
+
+/* desktop: meta is just a transparent inline group of time+dot */
+.tr-meta {
+  display: contents;
+}
+.tr-time {
+  width: 60px;
+  flex-shrink: 0;
+  font-size: 10.5px;
+  color: var(--text3);
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  padding-top: 3px;
+}
+.tr-dot {
+  display: none;  /* replaced by .tr-role chip everywhere */
+}
+.tr-role {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
+  min-width: 16px;
+  text-align: center;
+  margin-top: 2px;
+}
+/* desktop: tr-text remains editable on dblclick — we toggle contenteditable in JS */
+.tr-text[contenteditable="true"] { cursor: text; background: rgba(37, 99, 235, 0.04); }
+.tr-text[contenteditable="false"] { cursor: pointer; }
+.tr-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  outline: none;
+  min-width: 0;
+  cursor: text;
+  line-height: 1.45;
+}
+.tr-text:focus { background: rgba(37, 99, 235, 0.04); }
+
+.tr-empty {
+  min-height: var(--row-h);
+  background: transparent;
+  border-bottom: 1px solid var(--border-2);
+  position: relative;
+}
+.tr-empty::after {
+  content: '—';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: rgba(0,0,0,0.18);
+  pointer-events: none;
+  letter-spacing: 4px;
+}
+
+.gap-row {
+  grid-column: 1 / -1;
+  height: var(--gap-row-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 0.4px;
+  user-select: none;
+  background: repeating-linear-gradient(45deg, #fef3c7, #fef3c7 6px, #fde68a 6px, #fde68a 12px);
+  border-top: 1px solid #fcd34d;
+  border-bottom: 1px solid #fcd34d;
+  font-weight: 500;
+}
+
+/* canvas column header */
+#canvas-col-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0;
+}
+.canvas-col-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text2);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+.canvas-col-lbl:first-child { border-right: 1px solid var(--border); }
+.canvas-col-lbl b { color: var(--text); font-weight: 600; margin-left: 4px; }
+
+/* match stats chip */
+#stat-match { font-size: 11px; color: var(--text2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+#stat-match b { color: var(--text); font-weight: 600; }
+#stat-match .miss-num { color: var(--c-miss-num); }
+#stat-match .extra-num { color: var(--c-extra-num); }
+#stat-match .sep { color: var(--text3); margin: 0 4px; }
+
+/* hover actions */
+.row-hover-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.12s;
+  background: linear-gradient(90deg, transparent, #ffffff 20%, #ffffff);
+  padding: 1px 4px 1px 16px;
+  border-radius: 4px;
+}
+.tr-row.tr-solo-left .row-hover-actions { background: linear-gradient(90deg, transparent, #fef3c7 20%, #fef3c7); }
+.tr-row.tr-solo-right .row-hover-actions { background: linear-gradient(90deg, transparent, #e0e7ff 20%, #e0e7ff); }
+.row-act-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: color 0.1s, background 0.1s;
+  font-family: inherit;
+}
+.row-act-btn:hover { color: var(--text); background: rgba(0,0,0,0.06); }
+
+/* row action menu (long-press) */
+#row-action-menu {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 0;
+  z-index: 1100;
+  display: none;
+  min-width: 160px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+.ra-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+}
+.ra-item:hover, .ra-item:active { background: var(--hover-bg); }
+.ra-item.danger { color: #dc2626; }
+.ra-icon { width: 18px; text-align: center; opacity: 0.7; }
+
+/* role popover */
+#role-popover {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 0;
+  z-index: 1000;
+  display: none;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.role-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+  transition: background 0.1s;
+}
+.role-pop-item:hover { background: var(--hover-bg); }
+.role-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+
+/* time fields (shown on timer click) */
+.time-fields {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+.time-fields.visible { display: flex; }
+.time-field {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 10px;
+  font-family: 'SF Mono', monospace;
+  width: 58px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  outline: none;
+}
+.time-field:focus { border-color: var(--accent); }
+.time-field.err { border-color: #dc2626; }
+.time-lbl { color: var(--text2); }
+
+/* ---- AUDIO FOOTER ---- */
+#audio-footer {
+  height: 48px;
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+.player-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-width: 0;
+  transition: flex-grow 0.25s ease-out;
+}
+/* one player playing → 80/20 */
+.player-col.playing { flex-grow: 4; }
+.player-col.compact { flex-grow: 1; }
+.player-col.compact .pl-bar { min-width: 0; }
+.player-col.compact .pl-time { min-width: 0; font-size: 10px; opacity: 0.6; }
+.player-col.compact .pl-file { display: none; }
+.player-col.compact .pl-speed { display: none; }
+#left-player-col { border-right: none; }
+#right-player-col { display: none !important; }
+.pl-lbl { font-size: 10px; color: var(--text2); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+.pl-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  transition: background 0.12s, transform 0.08s;
+}
+.pl-btn:hover { background: #1d4ed8; }
+.pl-btn:active { transform: scale(0.94); }
+.pl-time {
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 130px;
+}
+.pl-time b { color: var(--text); font-weight: 600; }
+.pl-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  min-width: 30px;
+}
+.pl-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.pl-bar:hover .pl-fill { background: #1d4ed8; }
+.pl-speed {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+}
+.pl-speed:hover { border-color: var(--accent); }
+.pl-speed:active { background: var(--hover-bg); }
+.pl-file {
+  font-size: 10px;
+  color: var(--text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+/* keyboard hint footer */
+.kbd-hint {
+  font-size: 10px;
+  color: var(--text3);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.kbd-hint kbd {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  color: var(--text2);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* sync playback toggle */
+.sync-toggle {
+  font-size: 10px;
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  transition: border-color 0.12s, background 0.12s;
+}
+.sync-toggle.on { background: var(--row-active); border-color: var(--accent); color: var(--accent); }
+.sync-toggle:hover:not(.on) { border-color: #cbd5e1; }
+
+/* ---- DIALOG LABELING ---- */
+.tr-row.dlg-span, .tr-empty.dlg-span {
+  box-shadow: inset 4px 0 0 var(--dlg-color);
+}
+.tr-row.dlg-span-first, .tr-empty.dlg-span-first {
+  border-top: 2px solid var(--dlg-color);
+}
+.tr-row.dlg-span-last, .tr-empty.dlg-span-last {
+  border-bottom: 2px solid var(--dlg-color);
+}
+
+/* selection mode */
+body.labeling { cursor: crosshair; }
+body.labeling .tr-row[data-side="left"] { cursor: crosshair; }
+body.labeling .tr-row[data-side="right"] { cursor: not-allowed; opacity: 0.55; }
+.tr-row.sel-start { background: rgba(37, 99, 235, 0.18) !important; box-shadow: inset 0 0 0 2px var(--accent); }
+.tr-row.sel-hover { background: rgba(37, 99, 235, 0.08) !important; }
+
+/* dialog status bar */
+#labeling-bar {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+#labeling-bar.show { display: inline-flex; }
+#labeling-bar button {
+  background: rgba(255,255,255,0.18);
+  border: none;
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+}
+#labeling-bar button:hover { background: rgba(255,255,255,0.3); }
+#labeling-bar kbd {
+  background: rgba(255,255,255,0.18);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+}
+
+/* dialog list in left meta */
+#dialogs-section { padding-top: 4px; border-top: 1px solid var(--border); margin-top: 8px; }
+.dlg-section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 6px;
+}
+.dlg-section-hdr .lbl { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.dlg-add-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.dlg-add-btn:hover { background: #1d4ed8; }
+.dlg-add-btn.active { background: #dc2626; }
+
+.dlg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+.dlg-item:hover { background: var(--hover-bg); }
+.dlg-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.dlg-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dlg-status { font-size: 9px; padding: 1px 4px; border-radius: 3px; font-weight: 500; }
+.dlg-status.ok    { background: #d1fae5; color: #065f46; }
+.dlg-status.miss  { background: #fee2e2; color: #991b1b; }
+.dlg-status.split { background: #fef3c7; color: #92400e; }
+.dlg-status.merged{ background: #ede9fe; color: #5b21b6; }
+.dlg-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.dlg-del:hover { color: #dc2626; }
+
+#metrics-panel {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 10px 14px;
+  font-size: 10px;
+}
+#metrics-panel .m-title { color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 500; }
+.m-row { display: flex; justify-content: space-between; padding: 1.5px 0; color: var(--text2); }
+.m-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+.m-row.bad b { color: #dc2626; }
+.m-row.warn b { color: #ea580c; }
+.m-row.ok b { color: #16a34a; }
+
+/* mobile-only elements hidden on desktop */
+#mob-fab, #mob-info-btn, #mob-dlg-btn, #mob-drawer, #mob-drawer-overlay { display: none; }
+
+/* "back to playing" pill (works on desktop + mobile) */
+#back-to-active {
+  display: none;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 60px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+  z-index: 95;
+  align-items: center;
+  gap: 6px;
+}
+#back-to-active.show { display: inline-flex; }
+#back-to-active:hover { background: #1d4ed8; }
+
+/* ====================================
+   MOBILE: keep horizontal split, compact row layout
+   ==================================== */
+
+/* On mobile: time + role above text, not beside */
+@media (max-width: 880px) {
+  .meta-panel { width: 150px; }
+  .h-stat { display: none; }
+  .h-nav-grp .h-nav-lbl { font-size: 10px; }
+  .canvas-col-lbl .kbd-hint { display: none; }
+}
+
+@media (max-width: 720px) {
+  /* hide both meta panels entirely — full width to canvases */
+  #left-meta, #right-meta { display: none; }
+  #header { padding: 0 6px; gap: 6px; height: 42px; }
+  .h-center { gap: 4px; flex: 1 1 auto; min-width: 0; }
+  .h-sel { min-width: 0; flex: 1 1 50%; font-size: 11px; padding: 5px 6px; max-width: 50%; overflow: hidden; text-overflow: ellipsis; }
+  #logo { display: none; }
+  /* Hide all desktop-only header items on mobile */
+  .h-action, .sync-toggle, #stat-match, .h-stat, .h-nav-grp, #save-state, #mob-info-btn { display: none !important; }
+  .h-right { gap: 4px; flex-shrink: 0; }
+  /* "back to playing" pill — shown when user scrolled away from active row */
+  #back-to-active {
+    display: none;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 64px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+    z-index: 95;
+    align-items: center;
+    gap: 6px;
+  }
+  #back-to-active.show { display: inline-flex; }
+
+  /* mobile floating action button — dialog labeling */
+  #mob-fab {
+    display: flex;
+    position: fixed;
+    right: 12px;
+    bottom: 64px;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+    z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  #mob-fab.labeling { background: #dc2626; box-shadow: 0 6px 18px rgba(220,38,38,0.4); }
+  /* mobile drawer button for clips/dialogs/metrics */
+  #mob-info-btn {
+    display: inline-flex;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    gap: 4px;
+    align-items: center;
+    white-space: nowrap;
+  }
+  #mob-dlg-btn {
+    display: inline-flex !important;
+    background: var(--row-active);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    gap: 4px;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 28px;
+  }
+  #mob-dlg-btn:active { background: var(--accent); color: #fff; }
+  /* drawer */
+  #mob-drawer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    z-index: 500;
+    transform: translateY(100%);
+    transition: transform 0.25s ease-out;
+    border-top: 1px solid var(--border);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    box-shadow: 0 -8px 28px rgba(0,0,0,0.12);
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #mob-drawer.open { transform: translateY(0); }
+  #mob-drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 499;
+    display: none;
+  }
+  #mob-drawer-overlay.show { display: block; }
+  .mob-drawer-grip {
+    width: 36px; height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    align-self: center;
+    margin-bottom: 2px;
+  }
+  .drawer-section {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .drawer-section .lbl {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text2); font-weight: 500;
+  }
+  /* compact row: stack time+role inline above text */
+  .tr-row { padding: 5px 8px 6px; flex-direction: column; align-items: stretch; min-height: 34px; }
+  .tr-row .tr-meta { display: flex; align-items: center; gap: 6px; line-height: 1; }
+  .tr-time { width: auto; font-size: 9.5px; padding: 0; color: var(--text3); }
+  .tr-dot { display: none; }
+  .tr-role { display: inline-block; }
+  .tr-text { font-size: 12.5px; padding-top: 2px; line-height: 1.35; width: 100%; }
+  .tr-empty { min-height: 34px; }
+  .row-hover-actions { display: none; }
+  .canvas-col-lbl { padding: 0 8px; }
+  .canvas-col-lbl b { margin-left: 3px; }
+  .tr-row.clip-border { box-shadow: inset 3px 0 0 var(--accent); padding-left: 7px; }
+  #left-meta .meta-filename { font-size: 11px; }
+  #left-meta .meta-sub { font-size: 10px; }
+  #clips-list { font-size: 10px; }
+  .clip-row { padding: 3px 8px; gap: 5px; }
+  .clip-num { font-size: 10px; width: 12px; }
+  .clip-range { font-size: 10px; }
+  .clip-dur { font-size: 9px; }
+  /* mobile player: sticky at bottom */
+  #audio-footer {
+    height: 52px;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 90;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+  }
+  .pl-btn { width: 32px; height: 32px; font-size: 12px; }
+  .pl-time { font-size: 10px; min-width: 100px; }
+  .pl-file { display: none; }
+  .pl-lbl { font-size: 9px; padding: 1px 5px; background: var(--border-2); border-radius: 3px; }
+  .pl-speed { font-size: 12px; font-weight: 600; padding: 6px 11px; min-width: 44px; min-height: 28px; }
+  .player-col { padding: 0 8px; gap: 6px; }
+  .pl-bar { min-width: 40px; }
+  /* reserve space at bottom so canvas doesn't hide behind sticky player */
+  #rows-scroll { padding-bottom: 52px; }
+  /* FAB position above sticky player */
+  #mob-fab { bottom: 64px; }
+  /* labeling bar above sticky player too */
+  #labeling-bar { bottom: 64px; }
+}
+
+@media (max-width: 480px) {
+  .meta-panel { width: 92px; }
+  #left-meta .dlg-section-hdr .lbl { font-size: 9px; }
+  .dlg-add-btn { padding: 2px 5px; font-size: 10px; }
+  #metrics-panel { padding: 6px 8px; font-size: 9px; }
+  .meta-label { font-size: 9px; }
+  .h-center { gap: 4px; }
+  .h-sel { min-width: 80px; font-size: 10px; }
+  .tr-text { font-size: 12px; }
+  .tr-row { padding: 4px 6px 5px; }
+  .canvas-col-lbl { font-size: 9px; padding: 0 6px; }
+  #stat-match, .h-action { display: none; }
+}
+
+/* util */
+.hidden { display: none !important; }
+</style>
+</head>
+<body style="display:flex;flex-direction:column;height:100vh;">
+
+<!-- HEADER -->
+<div id="header">
+  <div id="logo">Badge <span>Verifier</span></div>
+  <div class="h-center">
+    <select class="h-sel" id="manager-sel"><option value="">Менеджер</option></select>
+    <select class="h-sel" id="session-sel"><option value="">Сессия</option></select>
+  </div>
+  <div class="h-right">
+    <div class="h-stat" id="stat-coverage">coverage <b>—</b></div>
+    <div class="h-stat" id="stat-gaps">gaps <b>—</b></div>
+    <div id="stat-match"></div>
+    <div class="h-nav-grp miss-grp" id="nav-miss-grp" style="display:none">
+      <button class="h-nav-btn" id="nav-miss-prev" onclick="jumpUnmatched('left',-1)" title="Пред. пропуск (длинный)">◀</button>
+      <span class="h-nav-lbl" id="nav-miss-lbl">miss 0</span>
+      <button class="h-nav-btn" id="nav-miss-next" onclick="jumpUnmatched('left',1)" title="След. пропуск (длинный)">▶</button>
+    </div>
+    <div class="h-nav-grp extra-grp" id="nav-extra-grp" style="display:none">
+      <button class="h-nav-btn" id="nav-extra-prev" onclick="jumpUnmatched('right',-1)" title="Пред. лишний (клипы)">◀</button>
+      <span class="h-nav-lbl" id="nav-extra-lbl">extra 0</span>
+      <button class="h-nav-btn" id="nav-extra-next" onclick="jumpUnmatched('right',1)" title="След. лишний (клипы)">▶</button>
+    </div>
+    <span class="sync-toggle on hidden" id="sync-toggle" onclick="toggleSync()" title="Синхронное проигрывание длинного и клипа">⇄ sync</span>
+    <span id="save-state"></span>
+    <button class="h-action" onclick="document.getElementById('import-input').click()" title="Загрузить ранее сохранённые правки">импорт</button>
+    <button class="h-action" onclick="exportEdits()">экспорт</button>
+    <input type="file" id="import-input" accept=".json" style="display:none" onchange="importEdits(this)">
+    <button id="mob-dlg-btn" onclick="toggleDrawer()" title="Диалоги, метрики, клипы">📑 <span id="mob-dlg-btn-cnt">0</span></button>
+    <button id="mob-info-btn" onclick="toggleDrawer()" title="Меню">⋯</button>
+  </div>
+</div>
+
+
+<!-- TIMELINE -->
+<div id="timeline-wrap"></div>
+<div id="tl-tooltip"></div>
+
+<!-- Labeling bar (shown when in select mode) -->
+<div id="labeling-bar">
+  <span id="labeling-msg">Кликни первый сегмент в длинном файле</span>
+  <button onclick="confirmDialog()" id="lbl-confirm" style="display:none">✓ Создать</button>
+  <button onclick="cancelLabeling()">Отмена <kbd>esc</kbd></button>
+</div>
+
+<!-- 4-COLUMN LAYOUT -->
+<div id="layout" style="flex:1;overflow:hidden;">
+
+  <!-- LEFT META -->
+  <div class="meta-panel" id="left-meta">
+    <div>
+      <div class="meta-label">Длинный файл</div>
+      <div class="meta-filename" id="lm-filename">—</div>
+      <div class="meta-sub" id="lm-duration"></div>
+      <div class="meta-sub" id="lm-segs"></div>
+      <div class="meta-sub" id="lm-status" style="margin-top:4px"></div>
+      <div id="v2-badge" class="hidden" style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:10px;">
+        <span style="background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600">v2</span>
+        <button onclick="resetEdits()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-family:inherit;font-size:10px;text-decoration:underline">сбросить</button>
+      </div>
+    </div>
+
+    <!-- Dialog labels section -->
+    <div id="dialogs-section">
+      <div class="dlg-section-hdr">
+        <span class="lbl">Диалоги <span id="dlg-count" style="color:var(--text)"></span></span>
+        <button class="dlg-add-btn" id="dlg-add-btn" onclick="toggleLabeling()" title="Разметить диалог (D)">+ диалог</button>
+      </div>
+      <div id="dialogs-list"></div>
+    </div>
+
+    <!-- Metrics panel -->
+    <div id="metrics-panel" style="margin-top:auto;display:none">
+      <div class="m-title">Метрики</div>
+      <div class="m-row"><span>размечено диалогов</span><b id="met-total">0</b></div>
+      <div class="m-row ok"><span>точно совпало</span><b id="met-ok">0</b></div>
+      <div class="m-row bad"><span>пропущено</span><b id="met-miss">0</b></div>
+      <div class="m-row warn"><span>разрезано</span><b id="met-split">0</b></div>
+      <div class="m-row warn"><span>склеено</span><b id="met-merged">0</b></div>
+    </div>
+  </div>
+
+  <!-- ALIGNED GRID CANVAS (left + right in one scroll container) -->
+  <div class="canvas-wrap" id="rows-canvas-wrap" style="flex:2;">
+    <div id="canvas-col-header">
+      <div class="canvas-col-lbl">
+        Длинный файл <b id="lbl-left-segs"></b>
+        <span class="kbd-hint" style="margin-left:auto"><kbd>Enter</kbd>split <kbd>⌫</kbd>merge</span>
+      </div>
+      <div class="canvas-col-lbl">
+        Клипы <b id="lbl-right-segs"></b>
+        <span class="kbd-hint" style="margin-left:auto"><kbd>J</kbd>/<kbd>K</kbd> miss/extra</span>
+      </div>
+    </div>
+    <div id="rows-scroll">
+      <div id="rows-container"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT META -->
+  <div class="meta-panel" id="right-meta">
+    <div id="clips-actions">
+      <button class="clips-act-btn" onclick="checkAllClips()">все</button>
+      <button class="clips-act-btn" onclick="uncheckAllClips()">сброс</button>
+    </div>
+    <div id="clips-list"></div>
+  </div>
+</div>
+
+<!-- AUDIO FOOTER -->
+<div id="audio-footer">
+  <div class="player-col" id="left-player-col">
+    <span class="pl-lbl">Длинный</span>
+    <button class="pl-btn" id="left-play-btn" onclick="togglePlay('left')">▶</button>
+    <span class="pl-time" id="left-time">0:00 / 0:00</span>
+    <div class="pl-bar" id="left-bar" onclick="seekBar(event,'left')">
+      <div class="pl-fill" id="left-fill" style="width:0%"></div>
+    </div>
+    <button class="pl-speed" id="left-speed" onclick="showSpeedMenu(event,'left')">1×</button>
+    <span class="pl-file" id="left-file">—</span>
+    <audio id="left-audio"></audio>
+  </div>
+  <div class="player-col" id="right-player-col">
+    <span class="pl-lbl">Клип</span>
+    <button class="pl-btn" id="right-play-btn" onclick="togglePlay('right')">▶</button>
+    <span class="pl-time" id="right-time">0:00 / 0:00</span>
+    <div class="pl-bar" id="right-bar" onclick="seekBar(event,'right')">
+      <div class="pl-fill" id="right-fill" style="width:0%"></div>
+    </div>
+    <button class="pl-speed" id="right-speed" onclick="showSpeedMenu(event,'right')">1×</button>
+    <span class="pl-file" id="right-file">—</span>
+    <audio id="right-audio"></audio>
+  </div>
+</div>
+
+<!-- "back to playing" pill -->
+<button id="back-to-active" onclick="backToActive()">↓ к воспроизведению</button>
+
+<!-- MOBILE: floating action button (dialog labeling) -->
+<button id="mob-fab" onclick="toggleLabeling()" title="Разметить диалог">＋</button>
+
+<!-- MOBILE: drawer overlay & content -->
+<div id="mob-drawer-overlay" onclick="closeDrawer()"></div>
+<div id="mob-drawer">
+  <div class="mob-drawer-grip"></div>
+  <div class="drawer-section">
+    <span class="lbl">Сессия</span>
+    <div id="dr-session-info" style="font-size:12px;color:var(--text)"></div>
+  </div>
+  <div class="drawer-section">
+    <span class="lbl">Метрики</span>
+    <div id="dr-metrics" style="font-size:12px"></div>
+  </div>
+  <div class="drawer-section">
+    <span class="lbl">Диалоги <span id="dr-dlg-count"></span></span>
+    <div id="dr-dlg-list"></div>
+  </div>
+  <div class="drawer-section">
+    <span class="lbl">Клипы <span id="dr-clip-count"></span></span>
+    <div style="display:flex;gap:8px;font-size:11px;margin-bottom:4px">
+      <button onclick="checkAllClips()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:inherit;font-size:11px">все</button>
+      <button onclick="uncheckAllClips()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-family:inherit;font-size:11px">сброс</button>
+    </div>
+    <div id="dr-clip-list" style="font-size:11px"></div>
+  </div>
+  <div class="drawer-section">
+    <span class="lbl">Файлы</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('import-input').click();closeDrawer()" style="flex:1;background:var(--panel);border:1px solid var(--border);padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:12px">📥 Импорт</button>
+      <button onclick="exportEdits();closeDrawer()" style="flex:1;background:var(--panel);border:1px solid var(--border);padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:12px">📤 Экспорт</button>
+    </div>
+  </div>
+  <div class="drawer-section">
+    <button onclick="closeDrawer()" style="background:var(--accent);color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">Закрыть</button>
+  </div>
+</div>
+
+<!-- ROW ACTION MENU (single tap/click) -->
+<div id="row-action-menu">
+  <div class="ra-item" onclick="raJump()"><span class="ra-icon">▶</span> Перейти и проиграть</div>
+  <div class="ra-item" onclick="raSpeed(event)"><span class="ra-icon">⏩</span> Скорость <span id="ra-speed-val" style="margin-left:auto;color:var(--text2);font-size:11px"></span></div>
+  <div class="ra-item" onclick="raEditText()"><span class="ra-icon">✎</span> Редактировать текст</div>
+  <div class="ra-item" onclick="raRole(event)"><span class="ra-icon">●</span> Роль…</div>
+  <div class="ra-item" onclick="raTime()"><span class="ra-icon">⏱</span> Тайминги</div>
+  <div style="height:1px;background:var(--border);margin:4px 0"></div>
+  <div class="ra-item" onclick="raSplit()"><span class="ra-icon">✂</span> Разделить пополам</div>
+  <div class="ra-item" onclick="raMergePrev()"><span class="ra-icon">⤴</span> Объединить с пред.</div>
+  <div class="ra-item" onclick="raMergeNext()"><span class="ra-icon">⤵</span> Объединить со след.</div>
+  <div style="height:1px;background:var(--border);margin:4px 0"></div>
+  <div class="ra-item danger" onclick="raDelete()"><span class="ra-icon">🗑</span> Удалить сегмент</div>
+</div>
+
+<!-- ROLE POPOVER -->
+<div id="role-popover">
+  <div class="role-pop-item" onclick="setRole('manager')">
+    <span class="role-dot" style="background:var(--c-manager)"></span>Менеджер
+  </div>
+  <div class="role-pop-item" onclick="setRole('client')">
+    <span class="role-dot" style="background:var(--c-client)"></span>Клиент
+  </div>
+  <div class="role-pop-item" onclick="setRole('staff')">
+    <span class="role-dot" style="background:var(--c-staff)"></span>Другой сотрудник
+  </div>
+  <div class="role-pop-item" onclick="setRole('unknown')">
+    <span class="role-dot" style="background:var(--c-unknown)"></span>Неизвестно
+  </div>
+</div>
+
+<script>
+// ================== STATE ==================
+let allData = [];
+let longSessions = []; // [{session, segments, audio_id, cdn_url, ...}]
+let longBySession = {}; // session_key → long file record
+let currentManager = '';
+let currentSession = '';
+let sessionClips = [];
+let checkedClipIndices = new Set();
+let selectedClipIdx = null;
+let longFileData = null;
+let isMock = false;
+
+// edit store: 'LEFT' → segs[], 'clip_N' / audio_id → segs[]
+const editStore = new Map();
+
+// autosave state
+let _dirtyKeys = new Set();   // keys changed since last autosave-download
+let _autosaveTimer = null;
+
+// current popover context
+let popoverCtx = null; // {side, segIdx, clipIdx}
+
+// speeds (shared between both players)
+const SPEED_OPTS = [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+let currentSpeed = 1;
+try { const v = parseFloat(localStorage.getItem('badge_verifier_speed')); if (v && SPEED_OPTS.includes(v)) currentSpeed = v; } catch(e){}
+
+// sync playback (when click row, seek both audios)
+let syncPlayback = true;
+
+
+// ================== DIALOG LABELING ==================
+// User-marked ground-truth dialogs in long file.
+// Each: {id, name, color, leftStartMs, leftEndMs}
+let dialogs = [];
+let labelMode = false;
+let labelSel = { startIdx: null, endIdx: null }; // edit indices in LEFT store
+const DIALOG_PALETTE = [
+  '#10b981', '#3b82f6', '#a855f7', '#ec4899', '#f97316',
+  '#06b6d4', '#84cc16', '#f59e0b', '#ef4444', '#8b5cf6',
+  '#14b8a6', '#d946ef', '#0ea5e9', '#fb923c', '#a3e635',
+];
+
+// built rows (for scroll sync)
+let builtRows = []; // [{left:seg|null, right:{seg,clipIdx}|null, isGap?}]
+
+// ================== INIT ==================
+document.addEventListener('DOMContentLoaded', async () => {
+  setupScrollSync();
+  setupAudio('left');
+  setupAudio('right');
+  setupDragDrop();
+  document.addEventListener('click', onDocClick);
+  document.addEventListener('keydown', onGlobalKeydown);
+  startAutosaveTimer();
+
+  // Restore all edits from localStorage into editStore
+  try {
+    const raw = localStorage.getItem('badge_verifier_edits');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const obj = parsed && parsed.edits;
+      if (obj) Object.entries(obj).forEach(([k, v]) => editStore.set(k, v));
+      // Migrate old 'LEFT' key → long:<audio_id> using session info if available
+      if (editStore.has('LEFT') && parsed.session) {
+        // We can only migrate after long_sessions is loaded — defer
+        window._pendingLeftMigration = { session: parsed.session, segs: editStore.get('LEFT') };
+      }
+    }
+  } catch(e) { console.warn('restore edits:', e); }
+
+  // restore sync toggle state
+  try {
+    const v = localStorage.getItem('badge_verifier_sync');
+    if (v === '0') {
+      syncPlayback = false;
+      document.getElementById('sync-toggle').classList.remove('on');
+    }
+  } catch(e){}
+
+  try {
+    const res = await fetch('./badges_metadata.json');
+    if (!res.ok) throw new Error(res.status);
+    allData = await res.json();
+    populateManagers();
+  } catch (e) {
+    console.warn('badges_metadata.json:', e.message);
+  }
+
+  try {
+    const res = await fetch('./long_sessions_metadata.json');
+    if (!res.ok) throw new Error(res.status);
+    longSessions = await res.json();
+    longBySession = {};
+    longSessions.forEach(s => { longBySession[s.session] = s; });
+    console.log(`Загружено ${longSessions.length} длинных сессий`);
+  } catch (e) {
+    console.warn('long_sessions_metadata.json:', e.message);
+  }
+
+  // Apply pending LEFT migration if we can find the audio_id by session
+  if (window._pendingLeftMigration) {
+    const { session, segs } = window._pendingLeftMigration;
+    const rec = longBySession[session];
+    if (rec && rec.audio_id) {
+      const newKey = 'long:' + rec.audio_id;
+      if (!editStore.has(newKey)) {
+        editStore.set(newKey, segs);
+        console.log(`Мигрировал LEFT → ${newKey} (${segs.length} сегментов)`);
+        _saveToLocalStorage();
+      }
+    }
+    editStore.delete('LEFT');
+    window._pendingLeftMigration = null;
+  }
+});
+
+// ================== MANAGERS / SESSIONS ==================
+function getSessionKey(filename) {
+  const m = (filename || '').match(/vt_smart_(\d+_\d+)_\d+\.wav/);
+  return m ? m[1] : 'unknown';
+}
+
+function populateManagers() {
+  const managers = [...new Set(allData.map(d => d.manager))].sort();
+  const sel = document.getElementById('manager-sel');
+  sel.innerHTML = '<option value="">Менеджер</option>' +
+    managers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+  sel.onchange = () => { currentManager = sel.value; populateSessions(); };
+}
+
+function populateSessions() {
+  const clips = allData.filter(d => d.manager === currentManager);
+  const sessions = [...new Set(clips.map(d => getSessionKey(d.filename)))].sort();
+  const sel = document.getElementById('session-sel');
+  sel.innerHTML = '<option value="">Сессия</option>' +
+    sessions.map(s => {
+      const cnt = clips.filter(d => getSessionKey(d.filename) === s).length;
+      const hasLong = longBySession[s] ? '' : ' ⏳';
+      return `<option value="${esc(s)}">${esc(s)} (${cnt} клип) ${hasLong}</option>`;
+    }).join('');
+  sel.onchange = () => { currentSession = sel.value; loadSession(); };
+  currentSession = '';
+  sessionClips = [];
+  checkedClipIndices.clear();
+  renderClipsList();
+  renderTimeline();
+}
+
+function loadSession() {
+  if (!currentSession) {
+    sessionClips = [];
+    clearLongFile(true);
+    renderClipsList(); renderTimeline();
+    return;
+  }
+  sessionClips = allData
+    .filter(d => d.manager === currentManager && getSessionKey(d.filename) === currentSession)
+    .sort((a, b) => new Date(a.start_dt) - new Date(b.start_dt));
+  selectedClipIdx = null;
+  checkedClipIndices.clear();
+  // Auto-check all clips for verification
+  sessionClips.forEach((_, i) => checkedClipIndices.add(i));
+
+  // Auto-load long file for this session
+  const longRec = longBySession[currentSession];
+  if (longRec) {
+    loadLongFile(longRec, false);
+  } else {
+    clearLongFile(true);
+    document.getElementById('lm-status').innerHTML =
+      `<span style="color:#ea580c">⏳ длинный файл ещё транскрибируется</span>`;
+    document.getElementById('lm-filename').textContent = currentSession;
+  }
+  renderClipsList();
+  renderTimeline();
+  updateStats();
+  rebuildCanvases();
+  renderDialogsList();
+}
+
+// ================== STATS ==================
+function updateStats() {
+  if (!sessionClips.length) {
+    document.getElementById('stat-coverage').innerHTML = 'coverage <b>—</b>';
+    document.getElementById('stat-gaps').innerHTML = 'gaps <b>—</b>';
+    return;
+  }
+  const t0 = new Date(sessionClips[0].start_dt);
+  const t1 = new Date(sessionClips[sessionClips.length - 1].end_dt);
+  const totalSec = (t1 - t0) / 1000;
+  const coveredSec = sessionClips.reduce((s, c) => s + (new Date(c.end_dt) - new Date(c.start_dt)) / 1000, 0);
+  const pct = totalSec > 0 ? ((coveredSec / totalSec) * 100).toFixed(1) : '0';
+  const gapCount = sessionClips.filter((c, i) =>
+    i > 0 && (new Date(c.start_dt) - new Date(sessionClips[i-1].end_dt)) > 2000
+  ).length;
+  document.getElementById('stat-coverage').innerHTML = `coverage <b>${pct}%</b>`;
+  document.getElementById('stat-gaps').innerHTML = `gaps <b>${gapCount}</b>`;
+}
+
+// ================== CLIPS LIST ==================
+function renderClipsList() {
+  const container = document.getElementById('clips-list');
+  if (!sessionClips.length) {
+    container.innerHTML = '<div style="padding:8px 14px;font-size:11px;color:var(--text2);">Выберите сессию</div>';
+    return;
+  }
+  container.innerHTML = sessionClips.map((clip, i) => {
+    const start = new Date(clip.start_dt);
+    const end = new Date(clip.end_dt);
+    const dur = clip.talk_duration || Math.round((end - start) / 1000);
+    const startTime = fmtTime(start);
+    const endTime = fmtTime(end);
+    const isActive = selectedClipIdx === i;
+    const isChecked = checkedClipIndices.has(i);
+    const segCount = (clip.segments || []).length;
+    return `<div class="clip-row${isActive ? ' active' : ''}" id="clip-row-${i}" onclick="onClipRowClick(${i})">
+      <input type="checkbox" class="clip-cb" id="clip-cb-${i}" ${isChecked ? 'checked' : ''}
+        onclick="event.stopPropagation()" onchange="onClipCheck(${i}, this.checked)">
+      <div class="clip-num">${i+1}</div>
+      <div class="clip-info">
+        <div class="clip-range">${esc(startTime)}–${esc(endTime)}</div>
+        <div class="clip-dur">${fmtDur(dur)} · ${segCount} реп</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onClipRowClick(idx) {
+  selectedClipIdx = idx;
+  document.querySelectorAll('.clip-row').forEach((el, i) => el.classList.toggle('active', i === idx));
+  onClipCheck(idx, true);
+  const cb = document.getElementById('clip-cb-' + idx);
+  if (cb) cb.checked = true;
+  loadAudio('right', sessionClips[idx]);
+  // scroll to clip in right canvas
+  scrollToClipInCanvas(idx);
+}
+
+function onClipCheck(idx, checked) {
+  if (checked) checkedClipIndices.add(idx);
+  else checkedClipIndices.delete(idx);
+  rebuildCanvases();
+  renderTimeline();
+}
+
+function checkAllClips() {
+  sessionClips.forEach((_, i) => checkedClipIndices.add(i));
+  renderClipsList();
+  rebuildCanvases();
+  renderTimeline();
+}
+
+function uncheckAllClips() {
+  checkedClipIndices.clear();
+  renderClipsList();
+  rebuildCanvases();
+  renderTimeline();
+}
+
+// ================== LONG FILE ==================
+function loadLongFile(data, mockFlag) {
+  let clip = Array.isArray(data) ? data[0] : data;
+  if (!clip || !clip.segments) return;
+  longFileData = clip;
+  isMock = !!mockFlag;
+  const key = leftKey();
+  // Restore stored edits if exist (already loaded into editStore at startup);
+  // otherwise initialize from original metadata.
+  if (!editStore.has(key)) {
+    const segs = (clip.segments || []).map(s => ({ ...s, role: speakerToRole(s.speaker) }));
+    editStore.set(key, segs);
+  }
+
+  const dur = clip.talk_duration || Math.round((new Date(clip.end_dt) - new Date(clip.start_dt)) / 1000);
+  // shorter friendly filename
+  let displayName = clip.audio_id || 'Длинный файл';
+  if (clip.filename) {
+    displayName = clip.filename.replace(/^MOCK_/, '').replace(/_FULL$/, '').replace(/^vt_smart_/, '').replace(/\.wav$/, '');
+    // if session-like (digits_digits), use just that
+    const m = displayName.match(/^(\d+_\d+)/);
+    if (m) displayName = m[1];
+  }
+  const fnEl = document.getElementById('lm-filename');
+  fnEl.textContent = displayName;
+  fnEl.title = clip.filename || clip.audio_id || '';
+  document.getElementById('lm-duration').textContent = fmtDur(dur);
+  document.getElementById('lm-segs').textContent = (clip.segments || []).length + ' реплик';
+  const statusEl = document.getElementById('lm-status');
+  if (statusEl) statusEl.innerHTML = '';
+
+  if (clip.cdn_url) loadAudio('left', clip);
+  loadDialogs();
+  rebuildCanvases();
+  updateV2Badge();
+}
+
+// ============ v2 indicator + reset ============
+function isCurrentSessionEdited() {
+  if (!longFileData) return false;
+  const orig = (longFileData.segments || []);
+  const stored = editStore.get(leftKey());
+  if (!stored) return false;
+  if (stored.length !== orig.length) return true;
+  for (let i = 0; i < stored.length; i++) {
+    const a = stored[i], b = orig[i];
+    if (!b) return true;
+    if (a.text !== b.text) return true;
+    if (a.start_time_ms !== b.start_time_ms) return true;
+    if (a.end_time_ms !== b.end_time_ms) return true;
+    if (a.role && a.role !== speakerToRole(b.speaker)) return true;
+  }
+  return false;
+}
+
+function updateV2Badge() {
+  const el = document.getElementById('v2-badge');
+  if (!el) return;
+  el.classList.toggle('hidden', !isCurrentSessionEdited());
+}
+
+function resetEdits() {
+  if (!longFileData) return;
+  if (!confirm('Сбросить локальные правки этой сессии? Оригинальные сегменты будут восстановлены.')) return;
+  const key = leftKey();
+  editStore.delete(key);
+  _dirtyKeys.add(key);
+  _saveToLocalStorage();
+  // Re-init from original
+  const segs = (longFileData.segments || []).map(s => ({ ...s, role: speakerToRole(s.speaker) }));
+  editStore.set(key, segs);
+  rebuildCanvases();
+  updateV2Badge();
+}
+
+function clearLongFile(quiet) {
+  longFileData = null;
+  editStore.delete('LEFT');
+  isMock = false;
+  document.getElementById('lm-filename').textContent = quiet ? '—' : '—';
+  document.getElementById('lm-duration').textContent = '';
+  document.getElementById('lm-segs').textContent = '';
+  const s = document.getElementById('lm-status'); if (s) s.innerHTML = '';
+  const a = document.getElementById('left-audio');
+  a.pause(); a.src = '';
+  if (!quiet) rebuildCanvases();
+}
+
+function setupDragDrop() { /* removed — no longer needed */ }
+
+// ================== SEGMENTS ==================
+function leftKey() {
+  if (longFileData && longFileData.audio_id) return 'long:' + longFileData.audio_id;
+  return 'LEFT';
+}
+
+function getLeftSegs() {
+  if (!longFileData) return [];
+  const key = leftKey();
+  if (!editStore.has(key)) {
+    const segs = (longFileData.segments || []).map(s => ({ ...s, role: speakerToRole(s.speaker) }));
+    editStore.set(key, segs);
+  }
+  return editStore.get(key);
+}
+
+function getRightSegs(clipIdx) {
+  const clip = sessionClips[clipIdx];
+  if (!clip) return [];
+  const key = clip.audio_id || ('clip_' + clipIdx);
+  if (!editStore.has(key)) {
+    const segs = (clip.segments || []).map(s => ({ ...s, role: speakerToRole(s.speaker) }));
+    editStore.set(key, segs);
+  }
+  return editStore.get(key);
+}
+
+function getSegStore(side, clipIdx) {
+  if (side === 'left') {
+    const k = leftKey();
+    return editStore.get(k) || [];
+  }
+  const clip = sessionClips[clipIdx];
+  if (!clip) return [];
+  const key = clip.audio_id || ('clip_' + clipIdx);
+  if (!editStore.has(key)) getRightSegs(clipIdx);
+  return editStore.get(key) || [];
+}
+
+function saveSegStore(side, clipIdx, segs) {
+  let key;
+  if (side === 'left') {
+    key = leftKey();
+    editStore.set(key, segs);
+  } else {
+    const clip = sessionClips[clipIdx];
+    if (!clip) return;
+    key = clip.audio_id || ('clip_' + clipIdx);
+    editStore.set(key, segs);
+  }
+  _dirtyKeys.add(key);
+  _saveToLocalStorage();
+  updateV2Badge();
+}
+
+function speakerToRole(sp) {
+  if (!sp) return 'unknown';
+  const s = sp.toLowerCase();
+  if (s.includes('консультант') || s.includes('спикер а') || s === 'a') return 'manager';
+  if (s.includes('спикер б') || s === 'б' || s === 'b' || s.includes('клиент')) return 'client';
+  return 'unknown';
+}
+
+function roleColor(role) {
+  return { manager: 'var(--c-manager)', client: 'var(--c-client)', staff: 'var(--c-staff)', unknown: 'var(--c-unknown)' }[role] || 'var(--c-unknown)';
+}
+
+// ================== ALIGNMENT ==================
+const THRESH_MS = 3000;
+const GAP_THRESH_MS = 30000;
+
+function buildRows(leftSegs, rightItems) {
+  // rightItems: [{seg, clipIdx, clipAbsStart}]
+  const left = [...leftSegs].sort((a, b) => +new Date(a.abs_start) - +new Date(b.abs_start));
+  const right = [...rightItems].sort((a, b) => rightAbsMs(a) - rightAbsMs(b));
+
+  function leftAbsMs(seg) {
+    if (seg.abs_start) return +new Date(seg.abs_start);
+    if (longFileData && longFileData.start_dt) return +new Date(longFileData.start_dt) + seg.start_time_ms;
+    return seg.start_time_ms;
+  }
+  function rightAbsMs(item) {
+    if (item.seg.abs_start) return +new Date(item.seg.abs_start);
+    return item.clipAbsStart + item.seg.start_time_ms;
+  }
+
+  const rows = [];
+  let li = 0, ri = 0;
+  while (li < left.length || ri < right.length) {
+    const l = li < left.length ? left[li] : null;
+    const r = ri < right.length ? right[ri] : null;
+    if (l && r) {
+      const diff = Math.abs(leftAbsMs(l) - rightAbsMs(r));
+      if (diff < THRESH_MS) { rows.push({ left: l, right: r }); li++; ri++; }
+      else if (leftAbsMs(l) <= rightAbsMs(r)) { rows.push({ left: l, right: null }); li++; }
+      else { rows.push({ left: null, right: r }); ri++; }
+    } else if (l) { rows.push({ left: l, right: null }); li++; }
+    else { rows.push({ left: null, right: r }); ri++; }
+  }
+
+  // mark clip first/last
+  const clipFirstIdx = new Map();  // clipIdx → row index of first seg
+  const clipLastIdx = new Map();
+  rows.forEach((row, i) => {
+    if (!row.right) return;
+    const ci = row.right.clipIdx;
+    if (!clipFirstIdx.has(ci)) clipFirstIdx.set(ci, i);
+    clipLastIdx.set(ci, i);
+  });
+  rows.forEach((row, i) => {
+    if (!row.right) return;
+    const ci = row.right.clipIdx;
+    row.isClipFirst = clipFirstIdx.get(ci) === i;
+    row.isClipLast = clipLastIdx.get(ci) === i;
+  });
+
+  // insert gap rows
+  const withGaps = [];
+  let lastRAbsMs = null;
+  for (const row of rows) {
+    if (row.right) {
+      const rms = rightAbsMs(row.right);
+      if (lastRAbsMs !== null && (rms - lastRAbsMs) > GAP_THRESH_MS) {
+        withGaps.push({ isGap: true, gapMs: rms - lastRAbsMs });
+      }
+      lastRAbsMs = rms + (row.right.seg.end_time_ms - row.right.seg.start_time_ms);
+    }
+    withGaps.push(row);
+  }
+  return withGaps;
+}
+
+function collectRightItems() {
+  const result = [];
+  checkedClipIndices.forEach(idx => {
+    const clip = sessionClips[idx];
+    if (!clip) return;
+    const clipAbsStart = +new Date(clip.start_dt);
+    getRightSegs(idx).forEach(seg => result.push({ seg, clipIdx: idx, clipAbsStart }));
+  });
+  return result;
+}
+
+// ================== CANVAS RENDER ==================
+const ROW_H = 28;
+const GAP_H = 20;
+
+function rebuildCanvases() {
+  const leftSegs = getLeftSegs();
+  const rightItems = collectRightItems();
+  builtRows = buildRows(leftSegs, rightItems);
+
+  // Stamp edit indices into rows before rendering
+  const leftStore = editStore.get(leftKey()) || [];
+  const rightStoreMap = new Map();
+  builtRows.forEach(row => {
+    if (row.isGap) return;
+    if (row.left) {
+      row._leftEditIdx = leftStore.indexOf(row.left);
+    }
+    if (row.right) {
+      const ci = row.right.clipIdx;
+      if (!rightStoreMap.has(ci)) rightStoreMap.set(ci, getRightSegs(ci));
+      row._rightEditIdx = rightStoreMap.get(ci).indexOf(row.right.seg);
+    }
+  });
+
+  // count alignment stats
+  let matchedCount = 0, soloLeftCount = 0, soloRightCount = 0;
+  builtRows.forEach(r => {
+    if (r.isGap) return;
+    if (r.left && r.right) matchedCount++;
+    else if (r.left && !r.right) soloLeftCount++;
+    else if (!r.left && r.right) soloRightCount++;
+  });
+
+  let html = '';
+  builtRows.forEach((row, i) => {
+    if (row.isGap) {
+      const label = '──── ' + fmtDur(Math.round(row.gapMs / 1000)) + ' ────';
+      html += `<div class="gap-row" data-row="${i}">${esc(label)}</div>`;
+      return;
+    }
+    const isLeftOnly = !!(row.left && !row.right);
+    const isRightOnly = !!(!row.left && row.right);
+    // dialog highlight for empty cells too
+    const leftDlg = row.left ? getDialogForLeftSeg(row.left) : null;
+    if (row.left) {
+      html += renderRow(row.left, 'left', i, row._leftEditIdx, -1, false, false, isLeftOnly);
+    } else {
+      const rDlg = row.right ? getDialogForRightSeg(row.right.seg, +new Date(sessionClips[row.right.clipIdx].start_dt)) : null;
+      const dStyle = rDlg ? `style="--dlg-color:${rDlg.color};background:${rDlg.color}14"` : '';
+      const dCls = rDlg ? ' dlg-span' : '';
+      html += `<div class="tr-empty tr-solo-right${dCls}" data-row="${i}" data-side="left" ${dStyle}></div>`;
+    }
+    if (row.right) {
+      html += renderRow(row.right.seg, 'right', i, row._rightEditIdx, row.right.clipIdx, row.isClipFirst, row.isClipLast, isRightOnly);
+    } else {
+      const dStyle = leftDlg ? `style="--dlg-color:${leftDlg.color};background:${leftDlg.color}14"` : '';
+      const dCls = leftDlg ? ' dlg-span' : '';
+      html += `<div class="tr-empty tr-solo-left${dCls}" data-row="${i}" data-side="right" ${dStyle}></div>`;
+    }
+  });
+
+  document.getElementById('rows-container').innerHTML = html;
+
+  // Update match stats
+  const matchEl = document.getElementById('stat-match');
+  if (matchEl) {
+    if (matchedCount + soloLeftCount + soloRightCount > 0) {
+      matchEl.innerHTML = `matched <b>${matchedCount}</b><span class="sep">·</span>miss <span class="miss-num"><b>${soloLeftCount}</b></span><span class="sep">·</span>extra <span class="extra-num"><b>${soloRightCount}</b></span>`;
+    } else {
+      matchEl.innerHTML = '';
+    }
+  }
+  // Show/hide nav groups
+  const missGrp = document.getElementById('nav-miss-grp');
+  const extraGrp = document.getElementById('nav-extra-grp');
+  if (missGrp) missGrp.style.display = soloLeftCount > 0 ? '' : 'none';
+  if (extraGrp) extraGrp.style.display = soloRightCount > 0 ? '' : 'none';
+  document.getElementById('nav-miss-lbl').textContent  = `miss ${soloLeftCount}`;
+  document.getElementById('nav-extra-lbl').textContent = `extra ${soloRightCount}`;
+  // Update column header counts
+  const lblL = document.getElementById('lbl-left-segs');
+  const lblR = document.getElementById('lbl-right-segs');
+  if (lblL) lblL.textContent = leftSegs.length ? leftSegs.length : '';
+  if (lblR) {
+    const rightTotal = [...checkedClipIndices].reduce((s, ci) => s + getRightSegs(ci).length, 0);
+    lblR.textContent = rightTotal ? rightTotal : '';
+  }
+
+  attachRowEvents();
+}
+
+function roleShortLabel(role) {
+  return ({manager:'Б', client:'К', staff:'С', unknown:'?'})[role] || '?';
+}
+
+function renderRow(seg, side, rowIdx, editIdx, clipIdx, isFirst, isLast, isSolo) {
+  const role = seg.role || speakerToRole(seg.speaker);
+  const color = roleColor(role);
+  const roleLbl = roleShortLabel(role);
+  let timeStr = '';
+  if (seg.abs_start) timeStr = absHHMMSS(seg.abs_start);
+  else timeStr = msHMS(seg.start_time_ms);
+  const text = (seg.text || '').trim();
+  const startHMS = msHMS(seg.start_time_ms);
+  const endHMS = msHMS(seg.end_time_ms);
+
+  const borderStyle = (side === 'right' && isFirst) ? ' clip-border' : '';
+  const soloStyle = isSolo ? ` tr-solo-${side}` : '';
+
+  // Dialog labeling
+  let dlg = null;
+  if (side === 'left') dlg = getDialogForLeftSeg(seg);
+  else {
+    const clipAbsStart = clipIdx >= 0 && sessionClips[clipIdx] ? +new Date(sessionClips[clipIdx].start_dt) : 0;
+    dlg = getDialogForRightSeg(seg, clipAbsStart);
+  }
+  let dlgStyle = '', dlgClass = '';
+  if (dlg) {
+    dlgClass = ' dlg-span';
+    dlgStyle = `--dlg-color:${dlg.color};background:${dlg.color}1a;`;
+  }
+
+  return `<div class="tr-row${borderStyle}${soloStyle}${dlgClass}" style="${dlgStyle}"
+    data-row="${rowIdx}" data-side="${side}" data-edit="${editIdx}" data-clip="${clipIdx}"
+    onclick="onRowClick(event, this)"
+    onmousedown="onRowMousedown(event, this)"
+    ontouchstart="onRowTouchStart(event, this)"
+    ontouchmove="onRowTouchMove(event)"
+    ontouchend="onRowTouchEnd()"
+    ontouchcancel="onRowTouchEnd()">
+    <span class="tr-meta">
+      <span class="tr-role" style="color:#fff;background:${color}">${roleLbl}</span>
+      <span class="tr-dot" style="color:${color}">●</span>
+      <span class="tr-time">${esc(timeStr)}</span>
+    </span>
+    <span class="tr-text"
+      contenteditable="false"
+      spellcheck="false"
+      data-side="${side}" data-edit="${editIdx}" data-clip="${clipIdx}"
+      ondblclick="onTextDblClick(event, this)"
+      onblur="onTextBlur(this)"
+      onkeydown="onTextKeydown(event, this)"
+    >${esc(text)}</span>
+    <div class="row-hover-actions">
+      <div class="time-fields" id="tf-${side}-${rowIdx}">
+        <span class="time-lbl">s</span>
+        <input class="time-field" value="${esc(startHMS)}"
+          onchange="onTimeChange(this,'start','${side}',${editIdx},${clipIdx})"
+          onclick="event.stopPropagation()">
+        <span class="time-lbl">e</span>
+        <input class="time-field" value="${esc(endHMS)}"
+          onchange="onTimeChange(this,'end','${side}',${editIdx},${clipIdx})"
+          onclick="event.stopPropagation()">
+      </div>
+      <button class="row-act-btn" title="Тайминг"
+        onclick="event.stopPropagation(); toggleTimeFields('${side}',${rowIdx})">⏱</button>
+      <button class="row-act-btn" title="Роль"
+        onclick="event.stopPropagation(); openRolePopover(event, '${side}', ${editIdx}, ${clipIdx})"
+        style="color:${color}">●▾</button>
+    </div>
+  </div>`;
+}
+
+function attachRowEvents() {
+  // keyboard events for contenteditable are inline
+}
+
+function toggleTimeFields(side, rowIdx) {
+  const el = document.getElementById(`tf-${side}-${rowIdx}`);
+  if (el) el.classList.toggle('visible');
+}
+
+// ================== EDITING ==================
+function onTextBlur(el) {
+  const side = el.dataset.side;
+  const editIdx = parseInt(el.dataset.edit);
+  const clipIdx = parseInt(el.dataset.clip);
+  const segs = getSegStore(side, clipIdx);
+  if (editIdx >= 0 && editIdx < segs.length) {
+    segs[editIdx].text = el.textContent.trim();
+    saveSegStore(side, clipIdx, segs);
+  }
+  // Disable edit mode after blur
+  el.contentEditable = 'false';
+}
+
+function onTextKeydown(e, el) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    splitSeg(el);
+  } else if (e.key === 'Backspace') {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const r = sel.getRangeAt(0);
+      if (r.startOffset === 0 && r.endOffset === 0) {
+        e.preventDefault();
+        mergeSeg(el);
+      }
+    }
+  }
+}
+
+function splitSeg(el) {
+  const side = el.dataset.side;
+  const idx = parseInt(el.dataset.edit);
+  const clipIdx = parseInt(el.dataset.clip);
+  const segs = getSegStore(side, clipIdx);
+  if (idx < 0 || idx >= segs.length) return;
+  const seg = segs[idx];
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+
+  // Persist the text the user actually typed in the DOM back into the seg first
+  seg.text = el.textContent;
+
+  // Get cursor offset within the text node
+  const range = sel.getRangeAt(0);
+  const fullText = el.textContent;
+  const pos = range.startOffset;
+
+  const textA = fullText.substring(0, pos).trimEnd();
+  const textB = fullText.substring(pos).trimStart();
+  const ratio = fullText.length ? pos / fullText.length : 0.5;
+  const origStart = seg.start_time_ms;
+  const origEnd = seg.end_time_ms;
+  const origAbsStart = seg.abs_start;
+  const origAbsEnd = seg.abs_end;
+  const splitMs = origStart + Math.round((origEnd - origStart) * ratio);
+
+  // 1. Update current seg in store (text, end_time_ms, abs_end)
+  seg.text = textA;
+  seg.end_time_ms = splitMs;
+  if (origAbsStart) {
+    seg.abs_end = fmtMSK(+new Date(origAbsStart) + (splitMs - origStart));
+  }
+
+  // 2. Build new seg (capture original times for the SECOND half)
+  const newSeg = { ...seg, text: textB, start_time_ms: splitMs, end_time_ms: origEnd };
+  if (origAbsStart) {
+    newSeg.abs_start = fmtMSK(+new Date(origAbsStart) + (splitMs - origStart));
+    newSeg.abs_end   = origAbsEnd || newSeg.abs_start;
+  } else {
+    newSeg.abs_start = null;
+    newSeg.abs_end = null;
+  }
+  segs.splice(idx + 1, 0, newSeg);
+  saveSegStore(side, clipIdx, segs);
+
+  // Re-render and place cursor at the start of the new (second-half) segment
+  rebuildCanvases();
+  setTimeout(() => focusSegText(side, clipIdx, idx + 1, 0), 0);
+}
+
+function focusSegText(side, clipIdx, editIdx, caretPos) {
+  const container = document.getElementById('rows-container');
+  const cell = container.querySelector(
+    `.tr-text[data-side="${side}"][data-edit="${editIdx}"][data-clip="${clipIdx}"]`
+  );
+  if (!cell) return;
+  cell.contentEditable = 'true';
+  cell.focus();
+  const tn = cell.firstChild;
+  if (tn && tn.nodeType === 3) {
+    const r = document.createRange();
+    const p = Math.min(caretPos == null ? tn.length : caretPos, tn.length);
+    r.setStart(tn, p);
+    r.collapse(true);
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  }
+  // scroll into view
+  cell.scrollIntoView({ block: 'nearest' });
+}
+
+function _reindexSide(container, side, clipIdx, fromEditIdx) {
+  // After a splice, update data-edit on cells beyond the insertion point
+  const cells = container.querySelectorAll(`.tr-text[data-side="${side}"][data-clip="${clipIdx}"]`);
+  cells.forEach(cell => {
+    const ei = parseInt(cell.dataset.edit);
+    if (ei >= fromEditIdx) {
+      cell.dataset.edit = ei + 1;
+      const row = cell.closest('.tr-row');
+      if (row) row.dataset.edit = ei + 1;
+    }
+  });
+}
+
+function mergeSeg(el) {
+  const side = el.dataset.side;
+  const idx = parseInt(el.dataset.edit);
+  if (idx <= 0) return;
+  const clipIdx = parseInt(el.dataset.clip);
+  const segs = getSegStore(side, clipIdx);
+  if (idx >= segs.length) return;
+
+  // Persist current text first
+  segs[idx].text = el.textContent;
+
+  // Cursor will go to end of prev seg (between merged halves)
+  const caretPos = (segs[idx - 1].text || '').length + 1; // +1 for joining space
+
+  mergeWithPrev(side, clipIdx, idx);
+  setTimeout(() => focusSegText(side, clipIdx, idx - 1, caretPos), 0);
+}
+
+function onTimeChange(input, field, side, editIdx, clipIdx) {
+  const ms = parseHMS(input.value.trim());
+  if (ms === null) { input.classList.add('err'); return; }
+  input.classList.remove('err');
+  const segs = getSegStore(side, clipIdx);
+  if (editIdx >= 0 && editIdx < segs.length) {
+    segs[editIdx][field === 'start' ? 'start_time_ms' : 'end_time_ms'] = ms;
+    saveSegStore(side, clipIdx, segs);
+  }
+}
+
+// ================== ROLE POPOVER ==================
+function openRolePopover(e, side, editIdx, clipIdx) {
+  popoverCtx = { side, editIdx, clipIdx };
+  const pop = document.getElementById('role-popover');
+  pop.style.display = 'block';
+  const x = Math.min(e.clientX, window.innerWidth - 180);
+  const y = Math.min(e.clientY + 4, window.innerHeight - 150);
+  pop.style.left = x + 'px';
+  pop.style.top = y + 'px';
+}
+
+function setRole(role) {
+  if (!popoverCtx) return;
+  const { side, editIdx, clipIdx } = popoverCtx;
+  const segs = getSegStore(side, clipIdx);
+  if (editIdx >= 0 && editIdx < segs.length) {
+    segs[editIdx].role = role;
+    saveSegStore(side, clipIdx, segs);
+  }
+  document.getElementById('role-popover').style.display = 'none';
+  popoverCtx = null;
+  rebuildCanvases();
+}
+
+function onDocClick(e) {
+  const pop = document.getElementById('role-popover');
+  if (!pop) return;
+  // Don't close if click was inside row-action-menu (likely about to open popover)
+  const ram = document.getElementById('row-action-menu');
+  if (ram && ram.contains(e.target)) return;
+  if (!pop.contains(e.target)) {
+    pop.style.display = 'none';
+    popoverCtx = null;
+  }
+}
+
+// ================== ROW CLICK → CONTEXT MENU ==================
+function onRowClick(e, rowEl) {
+  // labeling mode handler — first priority
+  if (labelMode && handleLabelClick(rowEl)) { e.preventDefault(); return; }
+  // ignore clicks on hover action buttons (timer/role popup), or on currently-editing text
+  if (e.target.closest('.row-hover-actions')) return;
+  if (e.target.classList && e.target.classList.contains('tr-text') && e.target.contentEditable === 'true') return;
+  // show action menu at click position
+  const x = (e.clientX != null) ? e.clientX : (_lastTapXY ? _lastTapXY.x : 100);
+  const y = (e.clientY != null) ? e.clientY : (_lastTapXY ? _lastTapXY.y : 100);
+  showRowActions(x, y, rowEl);
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+// Direct play/seek action — ALWAYS plays the long (left) audio.
+// For right-side rows, compute offset from long file start via abs_start.
+function doSeekAndPlay(rowEl) {
+  if (!rowEl) return;
+  const side = rowEl.dataset.side;
+  const editIdx = parseInt(rowEl.dataset.edit);
+  const clipIdx = parseInt(rowEl.dataset.clip);
+  if (!side) return;
+  const segs = getSegStore(side, clipIdx);
+  const seg = segs[editIdx];
+  if (!seg) return;
+
+  let timeSec;
+  if (side === 'left') {
+    timeSec = seg.start_time_ms / 1000;
+  } else {
+    // right side → compute offset from long file start
+    if (!longFileData || !longFileData.start_dt || !seg.abs_start) {
+      // fallback: just highlight, no seek
+      highlightRow(rowEl, side); return;
+    }
+    timeSec = (+new Date(seg.abs_start) - +new Date(longFileData.start_dt)) / 1000;
+    if (timeSec < 0) timeSec = 0;
+  }
+  seekTo('left', timeSec);
+  highlightRow(rowEl, side);
+  const a = document.getElementById('left-audio');
+  if (a && a.src && a.paused) a.play().catch(()=>{});
+}
+
+// Text edit only via dblclick
+function onTextDblClick(e, el) {
+  e.stopPropagation();
+  el.contentEditable = 'true';
+  el.focus();
+  // place caret near click position (works in most browsers via Range/caretRangeFromPoint)
+  if (document.caretRangeFromPoint) {
+    const r = document.caretRangeFromPoint(e.clientX, e.clientY);
+    if (r) {
+      const s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    }
+  }
+}
+
+function syncLeftToAbs(absMs) {
+  if (!longFileData || !longFileData.start_dt) return;
+  const offsetSec = (absMs - +new Date(longFileData.start_dt)) / 1000;
+  if (offsetSec >= 0) seekTo('left', offsetSec);
+}
+function syncRightToAbs(absMs) {
+  if (selectedClipIdx == null) return;
+  const clip = sessionClips[selectedClipIdx];
+  if (!clip) return;
+  const clipStart = +new Date(clip.start_dt);
+  const clipEnd = +new Date(clip.end_dt);
+  // If abs not in current clip, try to find a clip that contains this abs time
+  if (absMs < clipStart || absMs > clipEnd) {
+    const idx = sessionClips.findIndex(c => {
+      const s = +new Date(c.start_dt), e = +new Date(c.end_dt);
+      return absMs >= s && absMs <= e;
+    });
+    if (idx >= 0 && idx !== selectedClipIdx) {
+      selectedClipIdx = idx;
+      checkedClipIndices.add(idx);
+      loadAudio('right', sessionClips[idx]);
+      document.querySelectorAll('.clip-row').forEach((el, i) => el.classList.toggle('active', i === idx));
+      renderClipsList();
+      const newAbs = absMs - +new Date(sessionClips[idx].start_dt);
+      seekTo('right', newAbs / 1000);
+      return;
+    }
+    return;
+  }
+  seekTo('right', (absMs - clipStart) / 1000);
+}
+
+function toggleSync() {
+  syncPlayback = !syncPlayback;
+  const el = document.getElementById('sync-toggle');
+  el.classList.toggle('on', syncPlayback);
+  try { localStorage.setItem('badge_verifier_sync', syncPlayback ? '1' : '0'); } catch(e){}
+}
+
+// ================== ROW ACTION MENU (single tap/click) ==================
+let raCtx = null; // {rowEl, side, editIdx, clipIdx}
+
+// Touch handlers kept simple — just track tap position for menu positioning
+let _lastTapXY = null;
+function onRowTouchStart(e, rowEl) {
+  if (e.touches.length === 1) _lastTapXY = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}
+function onRowTouchMove(e) { /* noop */ }
+function onRowTouchEnd() { /* noop */ }
+
+function showRowActions(x, y, rowEl) {
+  if (!rowEl) return;
+  raCtx = {
+    rowEl,
+    side: rowEl.dataset.side,
+    editIdx: parseInt(rowEl.dataset.edit),
+    clipIdx: parseInt(rowEl.dataset.clip),
+  };
+  const menu = document.getElementById('row-action-menu');
+  const speedVal = document.getElementById('ra-speed-val');
+  if (speedVal) speedVal.textContent = currentSpeed + '×';
+  menu.style.display = 'block';
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  let left = x - mw / 2;
+  let top = y + 10;
+  if (left < 8) left = 8;
+  if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+  if (top + mh > window.innerHeight - 8) top = y - mh - 10;
+  if (top < 8) top = 8;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+  // close on outside touch/click
+  setTimeout(() => {
+    const off = (ev) => {
+      if (!menu.contains(ev.target)) { closeRowActions(); document.removeEventListener('click', off); document.removeEventListener('touchstart', off); }
+    };
+    document.addEventListener('click', off);
+    document.addEventListener('touchstart', off);
+  }, 0);
+}
+function closeRowActions() {
+  document.getElementById('row-action-menu').style.display = 'none';
+}
+
+function raEditText() {
+  closeRowActions();
+  if (!raCtx) return;
+  const tx = raCtx.rowEl.querySelector('.tr-text');
+  if (tx) {
+    tx.contentEditable = 'true';
+    tx.focus();
+    const r = document.createRange();
+    r.selectNodeContents(tx); r.collapse(false);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+}
+function raRole(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (!raCtx) return;
+  const ctx = raCtx;
+  closeRowActions();
+  // Defer to next tick so the click event chain doesn't immediately close the popover
+  setTimeout(() => {
+    const rect = ctx.rowEl.getBoundingClientRect();
+    openRolePopover({clientX: rect.left + 80, clientY: rect.top + 28}, ctx.side, ctx.editIdx, ctx.clipIdx);
+  }, 60);
+}
+function raTime() {
+  if (!raCtx) return;
+  closeRowActions();
+  const rowIdx = raCtx.rowEl.dataset.row;
+  toggleTimeFields(raCtx.side, rowIdx);
+  const tf = document.getElementById(`tf-${raCtx.side}-${rowIdx}`);
+  if (tf) tf.classList.add('visible');
+}
+function raJump() {
+  if (!raCtx) return;
+  const rowEl = raCtx.rowEl;
+  closeRowActions();
+  doSeekAndPlay(rowEl);
+}
+
+function raSpeed(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  // open speed menu near the clicked item
+  const target = (e && e.currentTarget) || (e && e.target) || raCtx?.rowEl;
+  closeRowActions();
+  setTimeout(() => showSpeedMenu({ currentTarget: target, clientX: e?.clientX, clientY: e?.clientY }, 'shared'), 50);
+}
+function raDelete() {
+  if (!raCtx) return;
+  closeRowActions();
+  if (!confirm('Удалить этот сегмент?')) return;
+  const segs = getSegStore(raCtx.side, raCtx.clipIdx);
+  if (raCtx.editIdx < 0 || raCtx.editIdx >= segs.length) return;
+  segs.splice(raCtx.editIdx, 1);
+  saveSegStore(raCtx.side, raCtx.clipIdx, segs);
+  rebuildCanvases();
+}
+
+function raSplit() {
+  if (!raCtx) return;
+  const { side, clipIdx, editIdx } = raCtx;
+  closeRowActions();
+  splitSegmentAt(side, clipIdx, editIdx, 0.5);
+}
+
+function raMergePrev() {
+  if (!raCtx) return;
+  const { side, clipIdx, editIdx } = raCtx;
+  closeRowActions();
+  if (editIdx <= 0) return;
+  mergeWithPrev(side, clipIdx, editIdx);
+}
+
+function raMergeNext() {
+  if (!raCtx) return;
+  const { side, clipIdx, editIdx } = raCtx;
+  closeRowActions();
+  const segs = getSegStore(side, clipIdx);
+  if (editIdx + 1 >= segs.length) return;
+  mergeWithPrev(side, clipIdx, editIdx + 1);
+}
+
+// Generic split at proportional position (0..1) of text/time
+// Format Date as ISO with +03:00 (MSK) — matches original metadata format
+function fmtMSK(ms) {
+  const tz = 3 * 60 * 60 * 1000;
+  const d = new Date(ms + tz);
+  const pad = (n, w=2) => String(n).padStart(w, '0');
+  const ms3 = pad(d.getUTCMilliseconds(), 3);
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.${ms3}+03:00`;
+}
+
+function splitSegmentAt(side, clipIdx, idx, ratio) {
+  const segs = getSegStore(side, clipIdx);
+  if (idx < 0 || idx >= segs.length) return;
+  const seg = segs[idx];
+  const fullText = seg.text || '';
+  const splitTextPos = Math.round(fullText.length * ratio);
+  // try to split at nearest space
+  let p = splitTextPos;
+  for (let off = 0; off < 20; off++) {
+    if (fullText[splitTextPos + off] === ' ') { p = splitTextPos + off; break; }
+    if (fullText[splitTextPos - off] === ' ') { p = splitTextPos - off; break; }
+  }
+  const textA = fullText.substring(0, p).trimEnd();
+  const textB = fullText.substring(p).trimStart();
+  const origStart = seg.start_time_ms;
+  const origEnd = seg.end_time_ms;
+  const origAbsStart = seg.abs_start;
+  const origAbsEnd = seg.abs_end;
+  const splitMs = origStart + Math.round((origEnd - origStart) * ratio);
+
+  seg.text = textA;
+  seg.end_time_ms = splitMs;
+  if (origAbsStart) {
+    seg.abs_end = fmtMSK(+new Date(origAbsStart) + (splitMs - origStart));
+  }
+  const newSeg = { ...seg, text: textB, start_time_ms: splitMs, end_time_ms: origEnd };
+  if (origAbsStart) {
+    newSeg.abs_start = fmtMSK(+new Date(origAbsStart) + (splitMs - origStart));
+    newSeg.abs_end   = origAbsEnd || newSeg.abs_start;
+  }
+  segs.splice(idx + 1, 0, newSeg);
+  saveSegStore(side, clipIdx, segs);
+  rebuildCanvases();
+}
+
+// Merge segs[idx] into segs[idx-1]
+function mergeWithPrev(side, clipIdx, idx) {
+  const segs = getSegStore(side, clipIdx);
+  if (idx <= 0 || idx >= segs.length) return;
+  const prev = segs[idx - 1], cur = segs[idx];
+  prev.text = ((prev.text || '').trimEnd() + ' ' + (cur.text || '').trimStart()).trim();
+  prev.end_time_ms = cur.end_time_ms;
+  if (cur.abs_end) prev.abs_end = cur.abs_end;
+  segs.splice(idx, 1);
+  saveSegStore(side, clipIdx, segs);
+  rebuildCanvases();
+}
+
+// ================== MOBILE DRAWER ==================
+function toggleDrawer() {
+  const d = document.getElementById('mob-drawer');
+  const o = document.getElementById('mob-drawer-overlay');
+  const willOpen = !d.classList.contains('open');
+  if (willOpen) renderDrawer();
+  d.classList.toggle('open', willOpen);
+  o.classList.toggle('show', willOpen);
+}
+function closeDrawer() {
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-drawer-overlay').classList.remove('show');
+}
+
+function renderDrawer() {
+  // session info
+  const infoEl = document.getElementById('dr-session-info');
+  if (infoEl) {
+    if (currentSession && longFileData) {
+      infoEl.innerHTML = `<b>${esc(currentSession)}</b><br>
+        <span style="color:var(--text2);font-size:11px">${esc(currentManager||'')} · ${fmtDur(longFileData.talk_duration||0)} · ${sessionClips.length} клип</span>`;
+    } else if (currentSession) {
+      infoEl.innerHTML = `<b>${esc(currentSession)}</b><br>
+        <span style="color:#ea580c;font-size:11px">⏳ длинный файл ещё транскрибируется</span>`;
+    } else {
+      infoEl.innerHTML = '<span style="color:var(--text3)">сессия не выбрана</span>';
+    }
+  }
+  // metrics
+  const statuses = computeDialogStatuses();
+  const mEl = document.getElementById('dr-metrics');
+  if (mEl) {
+    if (statuses.length) {
+      const ok = statuses.filter(s => s.kind === 'ok').length;
+      const miss = statuses.filter(s => s.kind === 'miss').length;
+      const split = statuses.filter(s => s.kind === 'split').length;
+      const merged = statuses.filter(s => s.kind === 'merged').length;
+      mEl.innerHTML = `
+        <div style="display:flex;justify-content:space-between;padding:2px 0"><span style="color:var(--text2)">всего</span><b>${statuses.length}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:2px 0;color:#16a34a"><span>совпало</span><b>${ok}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626"><span>пропущено</span><b>${miss}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:2px 0;color:#ea580c"><span>разрезано</span><b>${split}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:2px 0;color:#7c3aed"><span>склеено</span><b>${merged}</b></div>`;
+    } else {
+      mEl.innerHTML = '<div style="color:var(--text3);font-size:11px">размечайте диалоги кнопкой ＋</div>';
+    }
+  }
+  // dialogs
+  const dlEl = document.getElementById('dr-dlg-list');
+  if (dlEl) {
+    document.getElementById('dr-dlg-count').textContent = dialogs.length ? dialogs.length : '';
+    dlEl.innerHTML = dialogs.length
+      ? dialogs.map((d, i) => `
+        <div class="dlg-item" onclick="closeDrawer();jumpToDialog(${d.id})">
+          <span class="dlg-swatch" style="background:${d.color}"></span>
+          <span class="dlg-name">${esc(d.name)}</span>
+          <span class="dlg-status ${statuses[i].kind}">${statuses[i].label}</span>
+          <button class="dlg-del" onclick="event.stopPropagation();removeDialog(${d.id});renderDrawer()">×</button>
+        </div>`).join('')
+      : '<div style="color:var(--text3);font-size:11px">пусто</div>';
+  }
+  // clips
+  const clEl = document.getElementById('dr-clip-list');
+  if (clEl) {
+    document.getElementById('dr-clip-count').textContent = sessionClips.length ? sessionClips.length : '';
+    if (sessionClips.length) {
+      clEl.innerHTML = sessionClips.map((c, i) => {
+        const start = new Date(c.start_dt);
+        const end = new Date(c.end_dt);
+        const dur = c.talk_duration || Math.round((end - start)/1000);
+        const checked = checkedClipIndices.has(i) ? 'checked' : '';
+        return `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;border-bottom:1px solid var(--border-2)">
+          <input type="checkbox" ${checked} onchange="onClipCheck(${i}, this.checked);renderDrawer()">
+          <span style="font-variant-numeric:tabular-nums">${i+1}. ${fmtTime(start)}–${fmtTime(end)}</span>
+          <span style="color:var(--text2);margin-left:auto">${fmtDur(dur)} · ${(c.segments||[]).length}р</span>
+        </label>`;
+      }).join('');
+    } else {
+      clEl.innerHTML = '<div style="color:var(--text3);font-size:11px">нет клипов</div>';
+    }
+  }
+}
+
+// ================== DIALOG LABELING ==================
+function toggleLabeling() {
+  if (labelMode) { cancelLabeling(); return; }
+  if (!longFileData) { alert('Сначала выберите сессию с длинным файлом'); return; }
+  labelMode = true;
+  labelSel = { startIdx: null, endIdx: null };
+  document.body.classList.add('labeling');
+  const desktopBtn = document.getElementById('dlg-add-btn');
+  if (desktopBtn) { desktopBtn.classList.add('active'); desktopBtn.textContent = '× отмена'; }
+  const fab = document.getElementById('mob-fab');
+  if (fab) { fab.classList.add('labeling'); fab.textContent = '×'; }
+  document.getElementById('labeling-bar').classList.add('show');
+  document.getElementById('lbl-confirm').style.display = 'none';
+  document.getElementById('labeling-msg').textContent = 'Кликни первый сегмент диалога в длинном файле';
+}
+
+function cancelLabeling() {
+  labelMode = false;
+  labelSel = { startIdx: null, endIdx: null };
+  document.body.classList.remove('labeling');
+  const desktopBtn = document.getElementById('dlg-add-btn');
+  if (desktopBtn) { desktopBtn.classList.remove('active'); desktopBtn.textContent = '+ диалог'; }
+  const fab = document.getElementById('mob-fab');
+  if (fab) { fab.classList.remove('labeling'); fab.textContent = '＋'; }
+  document.getElementById('labeling-bar').classList.remove('show');
+  document.querySelectorAll('.tr-row.sel-start, .tr-row.sel-hover').forEach(el => {
+    el.classList.remove('sel-start', 'sel-hover');
+  });
+}
+
+function handleLabelClick(rowEl) {
+  if (!labelMode || rowEl.dataset.side !== 'left') return false;
+  const editIdx = parseInt(rowEl.dataset.edit);
+  if (isNaN(editIdx) || editIdx < 0) return true;
+  if (labelSel.startIdx === null) {
+    labelSel.startIdx = editIdx;
+    document.querySelectorAll('.tr-row.sel-start').forEach(el => el.classList.remove('sel-start'));
+    rowEl.classList.add('sel-start');
+    document.getElementById('labeling-msg').textContent = 'Кликни последний сегмент (или тот же — для одного сегмента)';
+    document.getElementById('lbl-confirm').style.display = '';
+  } else {
+    labelSel.endIdx = editIdx;
+    confirmDialog();
+  }
+  return true;
+}
+
+function confirmDialog() {
+  if (labelSel.startIdx === null) return;
+  let s = labelSel.startIdx;
+  let e = labelSel.endIdx !== null ? labelSel.endIdx : s;
+  if (e < s) [s, e] = [e, s];
+  const segs = getLeftSegs();
+  if (s < 0 || e >= segs.length) { cancelLabeling(); return; }
+
+  const startMs = segs[s].start_time_ms;
+  const endMs = segs[e].end_time_ms;
+  addDialog(startMs, endMs);
+  cancelLabeling();
+}
+
+function addDialog(startMs, endMs, name) {
+  const id = (dialogs.length ? Math.max(...dialogs.map(d => d.id)) : 0) + 1;
+  const color = DIALOG_PALETTE[(dialogs.length) % DIALOG_PALETTE.length];
+  dialogs.push({
+    id,
+    name: name || `Диалог ${id}`,
+    color,
+    leftStartMs: startMs,
+    leftEndMs: endMs,
+  });
+  saveDialogs();
+  renderDialogsList();
+  rebuildCanvases();
+}
+
+function removeDialog(id) {
+  dialogs = dialogs.filter(d => d.id !== id);
+  saveDialogs();
+  renderDialogsList();
+  rebuildCanvases();
+}
+
+function renameDialog(id) {
+  const d = dialogs.find(x => x.id === id);
+  if (!d) return;
+  const newName = prompt('Название:', d.name);
+  if (newName != null && newName.trim()) {
+    d.name = newName.trim();
+    saveDialogs();
+    renderDialogsList();
+  }
+}
+
+function jumpToDialog(id) {
+  const d = dialogs.find(x => x.id === id);
+  if (!d || !longFileData) return;
+  // find row containing this dialog's start
+  const segs = getLeftSegs();
+  const idx = segs.findIndex(s => s.start_time_ms >= d.leftStartMs);
+  if (idx < 0) return;
+  // find row in canvas
+  const row = builtRows.findIndex(r => !r.isGap && r.left === segs[idx]);
+  if (row >= 0) scrollToRow(row);
+}
+
+function saveDialogs() {
+  try { localStorage.setItem('badge_verifier_dialogs_' + (longFileData?.audio_id || 'mock'), JSON.stringify(dialogs)); } catch(e){}
+  updateMetrics();
+}
+function loadDialogs() {
+  try {
+    const key = 'badge_verifier_dialogs_' + (longFileData?.audio_id || 'mock');
+    const v = localStorage.getItem(key);
+    dialogs = v ? JSON.parse(v) : [];
+  } catch(e) { dialogs = []; }
+  renderDialogsList();
+}
+
+function renderDialogsList() {
+  const listEl = document.getElementById('dialogs-list');
+  const countEl = document.getElementById('dlg-count');
+  const mobCntEl = document.getElementById('mob-dlg-btn-cnt');
+  if (mobCntEl) mobCntEl.textContent = dialogs.length || '0';
+  if (!listEl) return;
+  countEl.textContent = dialogs.length ? dialogs.length : '';
+  if (!dialogs.length) {
+    listEl.innerHTML = '<div style="font-size:10px;color:var(--text3);padding:4px 0">пусто</div>';
+    document.getElementById('metrics-panel').style.display = 'none';
+    return;
+  }
+  // compute matching status per dialog
+  const statuses = computeDialogStatuses();
+  listEl.innerHTML = dialogs.map((d, i) => {
+    const st = statuses[i] || {kind:'?', label:'?'};
+    return `<div class="dlg-item" onclick="jumpToDialog(${d.id})" ondblclick="renameDialog(${d.id})" title="${esc(d.name)} — двойной клик для переименования">
+      <span class="dlg-swatch" style="background:${d.color}"></span>
+      <span class="dlg-name">${esc(d.name)}</span>
+      <span class="dlg-status ${st.kind}">${st.label}</span>
+      <button class="dlg-del" onclick="event.stopPropagation();removeDialog(${d.id})" title="Удалить">×</button>
+    </div>`;
+  }).join('');
+  document.getElementById('metrics-panel').style.display = '';
+  updateMetrics();
+}
+
+// Map each labeled dialog → clip overlap status
+function computeDialogStatuses() {
+  if (!longFileData) return dialogs.map(() => ({kind:'miss', label:'нет'}));
+  const longStart = +new Date(longFileData.start_dt);
+  return dialogs.map(d => {
+    const dStart = longStart + d.leftStartMs;
+    const dEnd = longStart + d.leftEndMs;
+    // find clips that overlap this absolute range
+    const overlapping = sessionClips.filter(c => {
+      const cs = +new Date(c.start_dt), ce = +new Date(c.end_dt);
+      return ce >= dStart && cs <= dEnd;
+    });
+    if (overlapping.length === 0) return {kind:'miss', label:'пропуск'};
+    if (overlapping.length === 1) {
+      const c = overlapping[0];
+      const cs = +new Date(c.start_dt), ce = +new Date(c.end_dt);
+      // Check if clip contains other dialogs too
+      const otherInside = dialogs.filter(other => other.id !== d.id).some(other => {
+        const os = longStart + other.leftStartMs, oe = longStart + other.leftEndMs;
+        return os >= cs - 1500 && oe <= ce + 1500;
+      });
+      if (otherInside) return {kind:'merged', label:'склеен'};
+      // Roughly aligned?
+      const tolerance = 5000;
+      if (Math.abs(cs - dStart) <= tolerance && Math.abs(ce - dEnd) <= tolerance) return {kind:'ok', label:'ok'};
+      return {kind:'ok', label:'ok ±'};
+    }
+    return {kind:'split', label:`÷${overlapping.length}`};
+  });
+}
+
+function updateMetrics() {
+  const statuses = computeDialogStatuses();
+  const total = statuses.length;
+  const ok = statuses.filter(s => s.kind === 'ok').length;
+  const miss = statuses.filter(s => s.kind === 'miss').length;
+  const split = statuses.filter(s => s.kind === 'split').length;
+  const merged = statuses.filter(s => s.kind === 'merged').length;
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('met-total', total);
+  setText('met-ok', ok);
+  setText('met-miss', miss);
+  setText('met-split', split);
+  setText('met-merged', merged);
+}
+
+// determine which dialog covers a given seg (long-file segment)
+function getDialogForLeftSeg(seg) {
+  if (!dialogs.length) return null;
+  const t = seg.start_time_ms;
+  return dialogs.find(d => t >= d.leftStartMs && t <= d.leftEndMs);
+}
+// for right side: by abs time inside dialog's left abs range
+function getDialogForRightSeg(seg, clipAbsStart) {
+  if (!dialogs.length || !longFileData) return null;
+  const longStart = +new Date(longFileData.start_dt);
+  let abs;
+  if (seg.abs_start) abs = +new Date(seg.abs_start);
+  else abs = clipAbsStart + (seg.start_time_ms || 0);
+  return dialogs.find(d => {
+    const ds = longStart + d.leftStartMs;
+    const de = longStart + d.leftEndMs;
+    return abs >= ds && abs <= de;
+  });
+}
+
+// ================== NAVIGATION (miss/extra jump, J/K) ==================
+let _currentUnmatched = { left: -1, right: -1 };
+
+function jumpUnmatched(side, dir) {
+  if (!builtRows.length) return;
+  const isLeft = side === 'left';
+  const rows = builtRows.map((r, i) => ({ r, i }))
+    .filter(({ r }) => !r.isGap && (isLeft ? (r.left && !r.right) : (!r.left && r.right)));
+  if (!rows.length) return;
+  // Determine current index in rows[]
+  let cur = _currentUnmatched[side];
+  let nextRowIdx;
+  if (cur < 0) {
+    // find first row visible in viewport
+    const scroll = document.getElementById('rows-scroll');
+    const top = scroll.scrollTop;
+    const firstVisible = rows.findIndex(({ i }) => {
+      const el = document.querySelector(`.tr-row[data-row="${i}"][data-side="${side}"]`)
+              || document.querySelector(`.tr-empty[data-row="${i}"][data-side="${side === 'left' ? 'right' : 'left'}"]`);
+      return el && el.offsetTop >= top;
+    });
+    cur = firstVisible >= 0 ? firstVisible : 0;
+    if (dir > 0) nextRowIdx = cur;
+    else nextRowIdx = Math.max(0, cur - 1);
+  } else {
+    nextRowIdx = cur + dir;
+    if (nextRowIdx < 0) nextRowIdx = rows.length - 1;
+    if (nextRowIdx >= rows.length) nextRowIdx = 0;
+  }
+  _currentUnmatched[side] = nextRowIdx;
+  const { i: rowIdx } = rows[nextRowIdx];
+  scrollToRow(rowIdx);
+}
+
+function scrollToRow(rowIdx) {
+  const container = document.getElementById('rows-container');
+  const scroll = document.getElementById('rows-scroll');
+  // find any cell with that data-row
+  const el = container.querySelector(`[data-row="${rowIdx}"]`);
+  if (!el) return;
+  const top = el.offsetTop - scroll.clientHeight / 3;
+  scroll.scrollTo({ top, behavior: 'smooth' });
+  // flash highlight
+  const cells = container.querySelectorAll(`[data-row="${rowIdx}"]`);
+  cells.forEach(c => {
+    c.style.transition = 'box-shadow 0.4s';
+    c.style.boxShadow = 'inset 0 0 0 2px var(--accent)';
+    setTimeout(() => { c.style.boxShadow = ''; }, 1200);
+  });
+}
+
+function onGlobalKeydown(e) {
+  if (e.key === 'Escape' && labelMode) { cancelLabeling(); e.preventDefault(); return; }
+  // ignore if user is editing
+  if (e.target && (e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) return;
+  if (e.key === 'j' || e.key === 'J') { jumpUnmatched('left', 1); e.preventDefault(); }
+  else if (e.key === 'k' || e.key === 'K') { jumpUnmatched('right', 1); e.preventDefault(); }
+  else if (e.key === 'd' || e.key === 'D') { toggleLabeling(); e.preventDefault(); }
+  else if (e.key === ' ') {
+    const audio = document.getElementById('left-audio');
+    if (audio && audio.src) {
+      if (audio.paused) audio.play(); else audio.pause();
+      e.preventDefault();
+    }
+  }
+}
+
+function onRowMousedown(e, rowEl) {
+  // clicking on text should go to contenteditable, not seek
+}
+
+function highlightRow(el, side) {
+  const cls = side === 'left' ? 'active-left' : 'active-right';
+  document.querySelectorAll('.tr-row.active').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function scrollToClipInCanvas(clipIdx) {
+  // find first row in the unified grid belonging to clipIdx
+  const container = document.getElementById('rows-container');
+  const el = container.querySelector(`[data-clip="${clipIdx}"].tr-row`);
+  if (el) {
+    el.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// ================== SCROLL SYNC + manual-scroll detection ==================
+// Suppress auto-scroll for a while after user manually scrolls.
+let _userScrollUntil = 0;
+const AUTOSCROLL_PAUSE_MS = 5000;
+
+function setupScrollSync() {
+  const scroll = document.getElementById('rows-scroll');
+  if (!scroll) return;
+  const mark = () => { _userScrollUntil = Date.now() + AUTOSCROLL_PAUSE_MS; };
+  scroll.addEventListener('wheel', mark, { passive: true });
+  scroll.addEventListener('touchstart', mark, { passive: true });
+  scroll.addEventListener('touchmove', mark, { passive: true });
+  // keyboard arrows / pagedown when focus is on scroll area
+  scroll.addEventListener('keydown', mark);
+  // also: if user uses scrollbar with mouse, mousedown on scrollbar starts manual scroll
+  scroll.addEventListener('mousedown', e => { if (e.target === scroll) mark(); });
+}
+
+function autoScrollPaused() {
+  return Date.now() < _userScrollUntil;
+}
+
+// ================== TIMELINE ==================
+function renderTimeline() {
+  const wrap = document.getElementById('timeline-wrap');
+  if (!sessionClips.length) { wrap.innerHTML = ''; return; }
+
+  const t0 = +new Date(sessionClips[0].start_dt);
+  const t1 = +new Date(sessionClips[sessionClips.length - 1].end_dt);
+  const total = t1 - t0;
+  if (total <= 0) return;
+
+  let html = '';
+  for (let i = 1; i < sessionClips.length; i++) {
+    const gs = +new Date(sessionClips[i-1].end_dt);
+    const ge = +new Date(sessionClips[i].start_dt);
+    if (ge - gs > 2000) {
+      const l = ((gs - t0) / total * 100).toFixed(3);
+      const w = ((ge - gs) / total * 100).toFixed(3);
+      html += `<div class="tl-gap" style="left:${l}%;width:${w}%"></div>`;
+    }
+  }
+  sessionClips.forEach((clip, idx) => {
+    const cs = +new Date(clip.start_dt);
+    const ce = +new Date(clip.end_dt);
+    const l = ((cs - t0) / total * 100).toFixed(3);
+    const w = Math.max(0.2, ((ce - cs) / total * 100)).toFixed(3);
+    const tt = fmtTime(new Date(cs)) + '–' + fmtTime(new Date(ce)) + '\n' + fmtDur((ce - cs) / 1000) +
+      (clip.filename ? '\n' + clip.filename : '');
+    const isSel = checkedClipIndices.has(idx) ? ' sel' : '';
+    html += `<div class="tl-clip${isSel}" style="left:${l}%;width:${w}%"
+      data-tt="${escAttr(tt)}"
+      onmouseenter="showTlTip(event,this)" onmouseleave="hideTlTip()"
+      onclick="onClipRowClick(${idx})"></div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function showTlTip(e, el) {
+  const tip = document.getElementById('tl-tooltip');
+  tip.textContent = el.dataset.tt;
+  tip.style.display = 'block';
+  moveTlTip(e);
+}
+function hideTlTip() { document.getElementById('tl-tooltip').style.display = 'none'; }
+document.addEventListener('mousemove', moveTlTip);
+function moveTlTip(e) {
+  const tip = document.getElementById('tl-tooltip');
+  if (tip.style.display !== 'block') return;
+  let x = e.clientX + 12, y = e.clientY - 8;
+  if (x + 270 > window.innerWidth) x = e.clientX - 282;
+  if (y + 90 > window.innerHeight) y = e.clientY - 98;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+
+// ================== AUDIO ==================
+function loadAudio(side, clip) {
+  const audio = document.getElementById(side + '-audio');
+  const fileEl = document.getElementById(side + '-file');
+  if (!clip || !clip.cdn_url) {
+    fileEl.textContent = (side === 'left' && isMock) ? '[мок]' : '—';
+    return;
+  }
+  audio.src = clip.cdn_url;
+  audio.load();
+  fileEl.textContent = clip.filename ? clip.filename.split('/').pop() : clip.cdn_url.split('/').pop();
+  document.getElementById(side + '-play-btn').textContent = '▶';
+  updateTime(side, 0, 0);
+}
+
+function setupAudio(side) {
+  const audio = document.getElementById(side + '-audio');
+  audio.ontimeupdate = () => {
+    const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    document.getElementById(side + '-fill').style.width = pct + '%';
+    updateTime(side, audio.currentTime, audio.duration || 0);
+    highlightPlayingRow(side, audio.currentTime * 1000);
+  };
+  audio.onended = () => { document.getElementById(side + '-play-btn').textContent = '▶'; updatePlayerLayout(); };
+  audio.onplay  = () => { document.getElementById(side + '-play-btn').textContent = '⏸'; updatePlayerLayout(); };
+  audio.onpause = () => { document.getElementById(side + '-play-btn').textContent = '▶'; updatePlayerLayout(); };
+}
+
+function updatePlayerLayout() {
+  const la = document.getElementById('left-audio');
+  const ra = document.getElementById('right-audio');
+  const lcol = document.getElementById('left-player-col');
+  const rcol = document.getElementById('right-player-col');
+  const lPlay = la && !la.paused && la.src;
+  const rPlay = ra && !ra.paused && ra.src;
+  // reset
+  lcol.classList.remove('playing','compact');
+  rcol.classList.remove('playing','compact');
+  if (lPlay && !rPlay) { lcol.classList.add('playing'); rcol.classList.add('compact'); }
+  else if (rPlay && !lPlay) { rcol.classList.add('playing'); lcol.classList.add('compact'); }
+}
+
+function togglePlay(side) {
+  const audio = document.getElementById(side + '-audio');
+  if (!audio.src) return;
+  if (audio.paused) audio.play(); else audio.pause();
+}
+
+function seekTo(side, sec) {
+  const audio = document.getElementById(side + '-audio');
+  if (audio.src) audio.currentTime = sec;
+}
+
+function seekBar(e, side) {
+  const audio = document.getElementById(side + '-audio');
+  if (!audio.src || !audio.duration) return;
+  const bar = e.currentTarget;
+  const rect = bar.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+}
+
+function updateTime(side, cur, dur) {
+  let abs = '';
+  try {
+    let baseStart = null;
+    if (side === 'left' && longFileData && longFileData.start_dt) {
+      baseStart = +new Date(longFileData.start_dt);
+    } else if (side === 'right' && selectedClipIdx != null && sessionClips[selectedClipIdx]) {
+      baseStart = +new Date(sessionClips[selectedClipIdx].start_dt);
+    }
+    if (baseStart) {
+      const t = new Date(baseStart + cur * 1000);
+      abs = t.toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+  } catch(e){}
+  const rel = fmtSec(cur) + ' / ' + fmtSec(dur);
+  document.getElementById(side + '-time').textContent = abs ? `${abs} · ${rel}` : rel;
+}
+
+function cycleSpeed(_side, dir) {
+  const d = dir || 1;
+  let idx = SPEED_OPTS.indexOf(currentSpeed);
+  if (idx < 0) idx = SPEED_OPTS.indexOf(1);
+  idx = (idx + d + SPEED_OPTS.length) % SPEED_OPTS.length;
+  setSpeed(SPEED_OPTS[idx]);
+}
+
+function setSpeed(v) {
+  currentSpeed = v;
+  ['left','right'].forEach(s => {
+    const a = document.getElementById(s + '-audio');
+    if (a) a.playbackRate = v;
+    const btn = document.getElementById(s + '-speed');
+    if (btn) btn.textContent = v + '×';
+  });
+  try { localStorage.setItem('badge_verifier_speed', String(v)); } catch(e){}
+  // mobile FAB hint or status flash
+  const ss = document.getElementById('save-state');
+  if (ss) {
+    ss.textContent = `▶ ${v}×`;
+    ss.classList.add('flash');
+    clearTimeout(ss._t);
+    ss._t = setTimeout(() => { ss.classList.remove('flash'); }, 700);
+  }
+}
+
+function showSpeedMenu(e, side) {
+  // Build popover with speed options (tap targets large)
+  const existing = document.getElementById('speed-menu');
+  if (existing) { existing.remove(); return; }
+  const isMobile = window.innerWidth <= 720;
+  const menu = document.createElement('div');
+  menu.id = 'speed-menu';
+  menu.style.cssText = `position:fixed;background:#fff;border:1px solid var(--border);border-radius:10px;padding:6px;z-index:1100;display:flex;flex-direction:column;gap:2px;box-shadow:0 12px 28px rgba(0,0,0,0.18);min-width:${isMobile?'120px':'88px'}`;
+  // header
+  const hdr = document.createElement('div');
+  hdr.textContent = 'Скорость';
+  hdr.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);padding:6px 10px 4px;font-weight:500';
+  menu.appendChild(hdr);
+  SPEED_OPTS.forEach(v => {
+    const item = document.createElement('div');
+    item.textContent = v + '×';
+    const active = v === currentSpeed;
+    item.style.cssText = `padding:${isMobile?'10px 14px':'8px 12px'};cursor:pointer;font-size:${isMobile?'15px':'13px'};font-variant-numeric:tabular-nums;border-radius:6px;text-align:center;font-family:'SF Mono','JetBrains Mono',monospace;font-weight:${active?'700':'500'};${active?'background:var(--accent);color:#fff':'color:var(--text)'}`;
+    item.onmouseenter = () => { if (v !== currentSpeed) item.style.background = 'var(--hover-bg)'; };
+    item.onmouseleave = () => { if (v !== currentSpeed) item.style.background = ''; };
+    item.onclick = (ev) => { ev.stopPropagation(); setSpeed(v); menu.remove(); };
+    menu.appendChild(item);
+  });
+  document.body.appendChild(menu);
+  // position above the button
+  const target = e.currentTarget || e.target || e;
+  const r = target.getBoundingClientRect ? target.getBoundingClientRect() : { top: e.clientY||50, bottom: e.clientY||50, left: e.clientX||50, right: e.clientX||50, width: 0, height: 0 };
+  const mr = menu.getBoundingClientRect();
+  let top = r.top - mr.height - 8;
+  if (top < 8) top = r.bottom + 8;
+  let left = r.left + r.width / 2 - mr.width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - mr.width - 8));
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+  // close on outside tap
+  setTimeout(() => {
+    const off = (ev) => {
+      if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('click', off); document.removeEventListener('touchstart', off); }
+    };
+    document.addEventListener('click', off);
+    document.addEventListener('touchstart', off);
+  }, 0);
+}
+
+function highlightPlayingRow(side, currentMs) {
+  if (side !== 'left') return; // only long file player exists now
+  const canvas = document.getElementById('rows-container');
+  // Remove .active from all rows first
+  canvas.querySelectorAll('.tr-row.active').forEach(r => r.classList.remove('active'));
+
+  // Find active LEFT row by relative time within long file
+  let activeRowIdx = -1;
+  let activeLeftEl = null;
+  if (longFileData) {
+    const leftRows = canvas.querySelectorAll('.tr-row[data-side="left"]');
+    leftRows.forEach(row => {
+      const editIdx = parseInt(row.dataset.edit);
+      const segs = getSegStore('left', -1);
+      const seg = segs[editIdx];
+      if (!seg) return;
+      if (currentMs >= seg.start_time_ms && currentMs < seg.end_time_ms) {
+        row.classList.add('active');
+        activeLeftEl = row;
+        activeRowIdx = parseInt(row.dataset.row);
+      }
+    });
+  }
+
+  // Also highlight RIGHT row whose seg overlaps the current ABSOLUTE time
+  // (so the user sees which clip segment is playing right now in the long file)
+  if (longFileData && longFileData.start_dt) {
+    const absMs = +new Date(longFileData.start_dt) + currentMs;
+    const rightRows = canvas.querySelectorAll('.tr-row[data-side="right"]');
+    rightRows.forEach(row => {
+      const editIdx = parseInt(row.dataset.edit);
+      const clipIdx = parseInt(row.dataset.clip);
+      const segs = getSegStore('right', clipIdx);
+      const seg = segs[editIdx];
+      if (!seg || !seg.abs_start) return;
+      const segS = +new Date(seg.abs_start);
+      const segE = seg.abs_end ? +new Date(seg.abs_end) : (segS + (seg.end_time_ms - seg.start_time_ms));
+      if (absMs >= segS && absMs < segE) {
+        row.classList.add('active');
+      }
+    });
+  }
+
+  // Auto-scroll to active LEFT row (paused if user just scrolled manually)
+  const scroll = document.getElementById('rows-scroll');
+  const btn = document.getElementById('back-to-active');
+  if (activeLeftEl) {
+    const top = activeLeftEl.offsetTop;
+    const h = scroll.clientHeight;
+    const outOfView = top < scroll.scrollTop || top > scroll.scrollTop + h - ROW_H * 2;
+    if (!autoScrollPaused() && outOfView) {
+      scroll.scrollTo({ top: top - h / 2, behavior: 'smooth' });
+      if (btn) btn.classList.remove('show');
+    } else if (autoScrollPaused() && outOfView) {
+      // User scrolled away — show pill
+      if (btn) btn.classList.add('show');
+    } else {
+      if (btn) btn.classList.remove('show');
+    }
+  } else {
+    if (btn) btn.classList.remove('show');
+  }
+}
+
+function backToActive() {
+  _userScrollUntil = 0;  // resume auto-scroll
+  const activeEl = document.querySelector('.tr-row.active[data-side="left"]');
+  if (activeEl) {
+    const scroll = document.getElementById('rows-scroll');
+    const top = activeEl.offsetTop;
+    const h = scroll.clientHeight;
+    scroll.scrollTo({ top: top - h / 2, behavior: 'smooth' });
+  }
+  const btn = document.getElementById('back-to-active');
+  if (btn) btn.classList.remove('show');
+}
+
+// ================== AUTOSAVE ==================
+function _buildAutosavePayload(keysFilter) {
+  const edits = {};
+  editStore.forEach((segs, key) => {
+    if (!keysFilter || keysFilter.has(key)) edits[key] = segs;
+  });
+  // Collect all dialog labels from localStorage (keyed by audio_id)
+  const dialogsByAudio = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('badge_verifier_dialogs_')) {
+        const audioId = k.substring('badge_verifier_dialogs_'.length);
+        try { dialogsByAudio[audioId] = JSON.parse(localStorage.getItem(k)); } catch(e){}
+      }
+    }
+  } catch(e){}
+  return {
+    saved_at: new Date().toISOString(),
+    session: currentSession || null,
+    audio_id: longFileData ? longFileData.audio_id : null,
+    edits,
+    dialogs: dialogsByAudio,
+  };
+}
+
+function _saveToLocalStorage() {
+  try {
+    const payload = _buildAutosavePayload(null); // full state
+    localStorage.setItem('badge_verifier_edits', JSON.stringify(payload));
+    const ind = document.getElementById('save-state');
+    if (ind) {
+      ind.textContent = '✓ сохранено';
+      ind.classList.add('flash');
+      clearTimeout(ind._t);
+      ind._t = setTimeout(() => { ind.classList.remove('flash'); }, 800);
+    }
+  } catch (e) { console.warn('localStorage save failed:', e); }
+}
+
+function _downloadAutosave() {
+  if (_dirtyKeys.size === 0) return;
+  const payload = _buildAutosavePayload(_dirtyKeys);
+  _dirtyKeys = new Set();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'edits_autosave.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function startAutosaveTimer() {
+  if (_autosaveTimer) clearInterval(_autosaveTimer);
+  _autosaveTimer = setInterval(_downloadAutosave, 60000);
+}
+
+// ================== IMPORT ==================
+function importEdits(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const obj = data && data.edits;
+      if (!obj || typeof obj !== 'object') throw new Error('нет поля edits');
+      let merged = 0, migrated = 0;
+      Object.entries(obj).forEach(([k, v]) => {
+        if (k === 'LEFT') {
+          const sess = data.session;
+          if (sess && longBySession[sess] && longBySession[sess].audio_id) {
+            editStore.set('long:' + longBySession[sess].audio_id, v);
+            migrated++; return;
+          }
+          if (longFileData && longFileData.audio_id) {
+            editStore.set('long:' + longFileData.audio_id, v);
+            migrated++; return;
+          }
+        }
+        editStore.set(k, v);
+        merged++;
+      });
+      // Restore dialog labels if present
+      let dlgRestored = 0;
+      if (data.dialogs && typeof data.dialogs === 'object') {
+        Object.entries(data.dialogs).forEach(([audioId, dlgs]) => {
+          try {
+            localStorage.setItem('badge_verifier_dialogs_' + audioId, JSON.stringify(dlgs));
+            dlgRestored++;
+          } catch(e){}
+        });
+      }
+      _saveToLocalStorage();
+      if (currentSession) loadSession();
+      else rebuildCanvases();
+      alert(`Импортировано: ${merged} ключей${migrated ? ` + мигрировано LEFT: ${migrated}` : ''}${dlgRestored ? ` + диалоги: ${dlgRestored} сессий` : ''}`);
+    } catch (err) {
+      alert('Ошибка импорта: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ================== EXPORT ==================
+function exportEdits() {
+  const payload = _buildAutosavePayload(null);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'edits_' + Date.now() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ================== FORMAT UTILS ==================
+function fmtTime(d) { return d.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+function fmtDur(sec) {
+  sec = Math.round(sec);
+  if (sec < 60) return sec + 'с';
+  const m = Math.floor(sec / 60), s = sec % 60;
+  if (m < 60) return m + 'м' + (s ? ' ' + s + 'с' : '');
+  const h = Math.floor(m / 60), rm = m % 60;
+  return h + 'ч' + (rm ? ' ' + rm + 'м' : '');
+}
+function fmtSec(sec) {
+  if (!isFinite(sec)) return '0:00';
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+function msHMS(ms) {
+  const t = Math.floor(ms / 1000);
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+  return `${m}:${pad(s)}`;
+}
+function absHHMMSS(str) {
+  try { return new Date(str).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+  catch { return '—'; }
+}
+function parseHMS(s) {
+  const p = s.split(':').map(Number);
+  if (p.some(isNaN)) return null;
+  if (p.length === 3) return (p[0] * 3600 + p[1] * 60 + p[2]) * 1000;
+  if (p.length === 2) return (p[0] * 60 + p[1]) * 1000;
+  if (p.length === 1) return p[0] * 1000;
+  return null;
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) {
+  if (!s && s !== 0) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  if (!s) return '';
+  return String(s).replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+}
+</script>
+</body>
+</html>
