@@ -1353,8 +1353,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   } catch(e){}
 
+  const cacheBust = '?v=' + Date.now();
   try {
-    const res = await fetch('./badges_metadata.json');
+    const res = await fetch('./badges_metadata.json' + cacheBust, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     allData = await res.json();
     populateManagers();
@@ -1363,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
-    const res = await fetch('./long_sessions_metadata.json');
+    const res = await fetch('./long_sessions_metadata.json' + cacheBust, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     longSessions = await res.json();
     longBySession = {};
@@ -2593,6 +2594,14 @@ function jumpToDialog(id) {
 
 function saveDialogs() {
   try { localStorage.setItem('badge_verifier_dialogs_' + (longFileData?.audio_id || 'mock'), JSON.stringify(dialogs)); } catch(e){}
+  // flash save indicator (same UX as text/role edits)
+  const ind = document.getElementById('save-state');
+  if (ind) {
+    ind.textContent = '✓ сохранено';
+    ind.classList.add('flash');
+    clearTimeout(ind._t);
+    ind._t = setTimeout(() => { ind.classList.remove('flash'); }, 800);
+  }
   updateMetrics();
 }
 function loadDialogs() {
