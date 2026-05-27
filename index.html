@@ -841,6 +841,31 @@ body.labeling .tr-row[data-side="right"] { cursor: not-allowed; opacity: 0.55; }
 /* mobile-only elements hidden on desktop */
 #mob-fab, #mob-info-btn, #mob-dlg-btn, #mob-drawer, #mob-drawer-overlay { display: none; }
 
+/* save toast — visible on both desktop and mobile when something is saved */
+#save-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--c-staff);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 22px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35);
+  white-space: nowrap;
+}
+#save-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* "back to playing" pill (works on desktop + mobile) */
 #back-to-active {
   display: none;
@@ -1198,6 +1223,9 @@ body.labeling .tr-row[data-side="right"] { cursor: not-allowed; opacity: 0.55; }
     <audio id="right-audio"></audio>
   </div>
 </div>
+
+<!-- save toast -->
+<div id="save-toast">✓ Сохранено</div>
 
 <!-- "back to playing" pill -->
 <button id="back-to-active" onclick="backToActive()">↓ к воспроизведению</button>
@@ -2618,14 +2646,7 @@ function jumpToDialog(id) {
 
 function saveDialogs() {
   try { localStorage.setItem('badge_verifier_dialogs_' + (longFileData?.audio_id || 'mock'), JSON.stringify(dialogs)); } catch(e){}
-  // flash save indicator (same UX as text/role edits)
-  const ind = document.getElementById('save-state');
-  if (ind) {
-    ind.textContent = '✓ сохранено';
-    ind.classList.add('flash');
-    clearTimeout(ind._t);
-    ind._t = setTimeout(() => { ind.classList.remove('flash'); }, 800);
-  }
+  flashSaved();
   updateMetrics();
 }
 function loadDialogs() {
@@ -3148,14 +3169,31 @@ function _saveToLocalStorage() {
   try {
     const payload = _buildAutosavePayload(null); // full state
     localStorage.setItem('badge_verifier_edits', JSON.stringify(payload));
-    const ind = document.getElementById('save-state');
-    if (ind) {
-      ind.textContent = '✓ сохранено';
-      ind.classList.add('flash');
-      clearTimeout(ind._t);
-      ind._t = setTimeout(() => { ind.classList.remove('flash'); }, 800);
-    }
+    flashSaved();
   } catch (e) { console.warn('localStorage save failed:', e); }
+}
+
+// Cross-platform save indicator: flashes the desktop pill AND a mobile toast
+let _flashTimer = null;
+function flashSaved(label) {
+  const txt = label || '✓ сохранено';
+  // desktop indicator
+  const ind = document.getElementById('save-state');
+  if (ind) {
+    ind.textContent = txt;
+    ind.classList.add('flash');
+  }
+  // mobile/desktop toast
+  const toast = document.getElementById('save-toast');
+  if (toast) {
+    toast.textContent = txt;
+    toast.classList.add('show');
+  }
+  clearTimeout(_flashTimer);
+  _flashTimer = setTimeout(() => {
+    if (ind) ind.classList.remove('flash');
+    if (toast) toast.classList.remove('show');
+  }, 900);
 }
 
 function _downloadAutosave() {
