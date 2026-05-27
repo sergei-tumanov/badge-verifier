@@ -1541,11 +1541,35 @@ function loadLongFile(data, mockFlag) {
   longFileData = clip;
   isMock = !!mockFlag;
   const key = leftKey();
-  // Restore stored edits if exist (already loaded into editStore at startup);
-  // otherwise initialize from original metadata.
+  // Restore stored edits if exist; otherwise initialize from original metadata.
   if (!editStore.has(key)) {
     const segs = (clip.segments || []).map(s => ({ ...s, role: speakerToRole(s.speaker) }));
     editStore.set(key, segs);
+  } else {
+    // Re-sync abs_start/abs_end from current start_dt
+    // (handles clock-shift corrections in long file metadata while preserving text/role edits)
+    try {
+      const newStartMs = +new Date(clip.start_dt);
+      if (!isNaN(newStartMs)) {
+        const stored = editStore.get(key);
+        let refreshed = 0;
+        stored.forEach(s => {
+          const sm = s.start_time_ms || 0;
+          const em = s.end_time_ms || 0;
+          const newAbsStart = fmtMSK(newStartMs + sm);
+          const newAbsEnd   = fmtMSK(newStartMs + em);
+          if (s.abs_start !== newAbsStart || s.abs_end !== newAbsEnd) {
+            s.abs_start = newAbsStart;
+            s.abs_end = newAbsEnd;
+            refreshed++;
+          }
+        });
+        if (refreshed > 0) {
+          console.log(`Refreshed abs_start on ${refreshed} long-file segments (clock shift sync)`);
+          _saveToLocalStorage();
+        }
+      }
+    } catch(e) { console.warn('abs_start refresh failed:', e); }
   }
 
   const dur = clip.talk_duration || Math.round((new Date(clip.end_dt) - new Date(clip.start_dt)) / 1000);
