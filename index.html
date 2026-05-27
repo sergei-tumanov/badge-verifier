@@ -3198,7 +3198,7 @@ function flashSaved(label) {
 
 function _downloadAutosave() {
   if (_dirtyKeys.size === 0) return;
-  const payload = _buildAutosavePayload(_dirtyKeys);
+  const payload = _buildAutosavePayload(null);
   _dirtyKeys = new Set();
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
