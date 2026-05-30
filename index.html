@@ -1390,6 +1390,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (e) {
     console.warn('badges_metadata.json:', e.message);
   }
+  // Burger clips live in a separate file so they don't conflict with electronics B-cuts updates
+  try {
+    const res = await fetch('./burger_clips.json' + cacheBust, { cache: 'no-store' });
+    if (res.ok) {
+      const burger = await res.json();
+      allData = (allData || []).concat(burger);
+      console.log(`Загружено ${burger.length} бургерных клипов`);
+    }
+  } catch (e) {
+    console.warn('burger_clips.json:', e.message);
+  }
 
   try {
     const res = await fetch('./long_sessions_metadata.json' + cacheBust, { cache: 'no-store' });
