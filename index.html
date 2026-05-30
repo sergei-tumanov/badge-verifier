@@ -1095,7 +1095,6 @@ body.labeling .tr-row[data-side="right"] { cursor: not-allowed; opacity: 0.55; }
 <div id="header">
   <div id="logo">Badge <span>Verifier</span></div>
   <div class="h-center">
-    <select class="h-sel" id="shop-sel"><option value="">Магазин</option></select>
     <select class="h-sel" id="manager-sel"><option value="">Менеджер</option></select>
     <select class="h-sel" id="session-sel"><option value="">Сессия</option></select>
   </div>
@@ -1383,18 +1382,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch(e){}
 
   const cacheBust = '?v=' + Date.now();
-  // ?source=b loads B-cut clips (V01_BASELINE × gpt-5.5 cuts) instead of default GT-cuts
-  const urlParams = new URLSearchParams(window.location.search);
-  const source = urlParams.get('source') === 'b' ? 'badges_metadata_b.json' : 'badges_metadata.json';
   try {
-    const res = await fetch('./' + source + cacheBust, { cache: 'no-store' });
+    const res = await fetch('./badges_metadata.json' + cacheBust, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     allData = await res.json();
-    if (urlParams.get('source') === 'b') {
-      document.title = 'Badge Verifier (B-cuts)';
-    }
+    populateManagers();
   } catch (e) {
-    console.warn(source + ':', e.message);
+    console.warn('badges_metadata.json:', e.message);
   }
 
   try {
@@ -1407,10 +1401,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (e) {
     console.warn('long_sessions_metadata.json:', e.message);
   }
-
-  // Populate selectors AFTER both data sources loaded so long-only managers appear
-  populateShops();
-  populateManagers();
 
   // Apply pending LEFT migration if we can find the audio_id by session
   if (window._pendingLeftMigration) {
@@ -1431,36 +1421,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ================== MANAGERS / SESSIONS ==================
 function getSessionKey(filename) {
-  const f = filename || '';
-  const m1 = f.match(/vt_smart_(\d+_\d+)_\d+\.wav/);
-  if (m1) return m1[1];
-  // Burger pattern: burger_sNN_vX_vs_v0__<conv_id>.mp3
-  const m2 = f.match(/^(burger_s\d+_v\d+_vs_v0)__/);
-  if (m2) return m2[1];
-  return 'unknown';
-}
-
-let currentShop = '';
-
-function populateShops() {
-  const fromClips = allData.map(d => d.shop).filter(Boolean);
-  const fromLong = longSessions.map(s => s.shop).filter(Boolean);
-  const shops = [...new Set([...fromClips, ...fromLong])].sort();
-  const sel = document.getElementById('shop-sel');
-  sel.innerHTML = '<option value="">Магазин</option>' +
-    shops.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-  sel.onchange = () => {
-    currentShop = sel.value;
-    currentManager = ''; currentSession = '';
-    populateManagers();
-    document.getElementById('session-sel').innerHTML = '<option value="">Сессия</option>';
-  };
+  const m = (filename || '').match(/vt_smart_(\d+_\d+)_\d+\.wav/);
+  return m ? m[1] : 'unknown';
 }
 
 function populateManagers() {
-  const fromClips = allData.filter(d => !currentShop || d.shop === currentShop).map(d => d.manager).filter(Boolean);
-  const fromLong = longSessions.filter(s => !currentShop || s.shop === currentShop).map(s => s.manager).filter(Boolean);
-  const managers = [...new Set([...fromClips, ...fromLong])].sort();
+  const managers = [...new Set(allData.map(d => d.manager))].sort();
   const sel = document.getElementById('manager-sel');
   sel.innerHTML = '<option value="">Менеджер</option>' +
     managers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
@@ -1468,24 +1434,14 @@ function populateManagers() {
 }
 
 function populateSessions() {
-  const clips = allData.filter(d =>
-    d.manager === currentManager && (!currentShop || d.shop === currentShop)
-  );
-  const clipSessions = [...new Set(clips.map(d => getSessionKey(d.filename)))];
-  const longOnly = longSessions
-    .filter(s => s.manager === currentManager && (!currentShop || s.shop === currentShop))
-    .map(s => s.session)
-    .filter(s => !clipSessions.includes(s));
-  const sessions = [...new Set([...clipSessions, ...longOnly])].sort();
+  const clips = allData.filter(d => d.manager === currentManager);
+  const sessions = [...new Set(clips.map(d => getSessionKey(d.filename)))].sort();
   const sel = document.getElementById('session-sel');
   sel.innerHTML = '<option value="">Сессия</option>' +
     sessions.map(s => {
       const cnt = clips.filter(d => getSessionKey(d.filename) === s).length;
-      const longRec = longBySession[s];
-      const longTag = longRec
-        ? (longRec.variant ? ` [${longRec.variant}]` : '')
-        : ' ⏳';
-      return `<option value="${esc(s)}">${esc(s)} (${cnt} клип)${longTag}</option>`;
+      const hasLong = longBySession[s] ? '' : ' ⏳';
+      return `<option value="${esc(s)}">${esc(s)} (${cnt} клип) ${hasLong}</option>`;
     }).join('');
   sel.onchange = () => { currentSession = sel.value; loadSession(); };
   currentSession = '';
