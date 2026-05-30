@@ -1382,13 +1382,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch(e){}
 
   const cacheBust = '?v=' + Date.now();
+  // ?source=b loads B-cut clips (V01_BASELINE × gpt-5.5 cuts) instead of default GT-cuts
+  const urlParams = new URLSearchParams(window.location.search);
+  const source = urlParams.get('source') === 'b' ? 'badges_metadata_b.json' : 'badges_metadata.json';
   try {
-    const res = await fetch('./badges_metadata.json' + cacheBust, { cache: 'no-store' });
+    const res = await fetch('./' + source + cacheBust, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     allData = await res.json();
     populateManagers();
+    if (urlParams.get('source') === 'b') {
+      document.title = 'Badge Verifier (B-cuts)';
+    }
   } catch (e) {
-    console.warn('badges_metadata.json:', e.message);
+    console.warn(source + ':', e.message);
   }
 
   try {
