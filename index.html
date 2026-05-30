@@ -1431,8 +1431,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ================== MANAGERS / SESSIONS ==================
 function getSessionKey(filename) {
-  const m = (filename || '').match(/vt_smart_(\d+_\d+)_\d+\.wav/);
-  return m ? m[1] : 'unknown';
+  const f = filename || '';
+  const m1 = f.match(/vt_smart_(\d+_\d+)_\d+\.wav/);
+  if (m1) return m1[1];
+  // Burger pattern: burger_sNN_vX_vs_v0__<conv_id>.mp3
+  const m2 = f.match(/^(burger_s\d+_v\d+_vs_v0)__/);
+  if (m2) return m2[1];
+  return 'unknown';
 }
 
 let currentShop = '';
