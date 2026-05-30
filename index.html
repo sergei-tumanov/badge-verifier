@@ -1432,7 +1432,9 @@ function getSessionKey(filename) {
 }
 
 function populateManagers() {
-  const managers = [...new Set(allData.map(d => d.manager))].sort();
+  const fromClips = allData.map(d => d.manager).filter(Boolean);
+  const fromLong = longSessions.map(s => s.manager).filter(Boolean);
+  const managers = [...new Set([...fromClips, ...fromLong])].sort();
   const sel = document.getElementById('manager-sel');
   sel.innerHTML = '<option value="">Менеджер</option>' +
     managers.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
@@ -1441,13 +1443,21 @@ function populateManagers() {
 
 function populateSessions() {
   const clips = allData.filter(d => d.manager === currentManager);
-  const sessions = [...new Set(clips.map(d => getSessionKey(d.filename)))].sort();
+  const clipSessions = [...new Set(clips.map(d => getSessionKey(d.filename)))];
+  const longOnly = longSessions
+    .filter(s => s.manager === currentManager)
+    .map(s => s.session)
+    .filter(s => !clipSessions.includes(s));
+  const sessions = [...new Set([...clipSessions, ...longOnly])].sort();
   const sel = document.getElementById('session-sel');
   sel.innerHTML = '<option value="">Сессия</option>' +
     sessions.map(s => {
       const cnt = clips.filter(d => getSessionKey(d.filename) === s).length;
-      const hasLong = longBySession[s] ? '' : ' ⏳';
-      return `<option value="${esc(s)}">${esc(s)} (${cnt} клип) ${hasLong}</option>`;
+      const longRec = longBySession[s];
+      const longTag = longRec
+        ? (longRec.variant ? ` [${longRec.variant}]` : '')
+        : ' ⏳';
+      return `<option value="${esc(s)}">${esc(s)} (${cnt} клип)${longTag}</option>`;
     }).join('');
   sel.onchange = () => { currentSession = sel.value; loadSession(); };
   currentSession = '';
