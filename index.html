@@ -1389,7 +1389,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch('./' + source + cacheBust, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     allData = await res.json();
-    populateManagers();
     if (urlParams.get('source') === 'b') {
       document.title = 'Badge Verifier (B-cuts)';
     }
@@ -1407,6 +1406,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (e) {
     console.warn('long_sessions_metadata.json:', e.message);
   }
+
+  // Populate selectors AFTER both data sources loaded so long-only managers appear
+  populateManagers();
 
   // Apply pending LEFT migration if we can find the audio_id by session
   if (window._pendingLeftMigration) {
