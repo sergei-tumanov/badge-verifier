@@ -1095,6 +1095,7 @@ body.labeling .tr-row[data-side="right"] { cursor: not-allowed; opacity: 0.55; }
 <div id="header">
   <div id="logo">Badge <span>Verifier</span></div>
   <div class="h-center">
+    <select class="h-sel" id="shop-sel"><option value="">Магазин</option></select>
     <select class="h-sel" id="manager-sel"><option value="">Менеджер</option></select>
     <select class="h-sel" id="session-sel"><option value="">Сессия</option></select>
   </div>
@@ -1408,6 +1409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Populate selectors AFTER both data sources loaded so long-only managers appear
+  populateShops();
   populateManagers();
 
   // Apply pending LEFT migration if we can find the audio_id by session
@@ -1433,9 +1435,26 @@ function getSessionKey(filename) {
   return m ? m[1] : 'unknown';
 }
 
+let currentShop = '';
+
+function populateShops() {
+  const fromClips = allData.map(d => d.shop).filter(Boolean);
+  const fromLong = longSessions.map(s => s.shop).filter(Boolean);
+  const shops = [...new Set([...fromClips, ...fromLong])].sort();
+  const sel = document.getElementById('shop-sel');
+  sel.innerHTML = '<option value="">Магазин</option>' +
+    shops.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  sel.onchange = () => {
+    currentShop = sel.value;
+    currentManager = ''; currentSession = '';
+    populateManagers();
+    document.getElementById('session-sel').innerHTML = '<option value="">Сессия</option>';
+  };
+}
+
 function populateManagers() {
-  const fromClips = allData.map(d => d.manager).filter(Boolean);
-  const fromLong = longSessions.map(s => s.manager).filter(Boolean);
+  const fromClips = allData.filter(d => !currentShop || d.shop === currentShop).map(d => d.manager).filter(Boolean);
+  const fromLong = longSessions.filter(s => !currentShop || s.shop === currentShop).map(s => s.manager).filter(Boolean);
   const managers = [...new Set([...fromClips, ...fromLong])].sort();
   const sel = document.getElementById('manager-sel');
   sel.innerHTML = '<option value="">Менеджер</option>' +
@@ -1444,10 +1463,12 @@ function populateManagers() {
 }
 
 function populateSessions() {
-  const clips = allData.filter(d => d.manager === currentManager);
+  const clips = allData.filter(d =>
+    d.manager === currentManager && (!currentShop || d.shop === currentShop)
+  );
   const clipSessions = [...new Set(clips.map(d => getSessionKey(d.filename)))];
   const longOnly = longSessions
-    .filter(s => s.manager === currentManager)
+    .filter(s => s.manager === currentManager && (!currentShop || s.shop === currentShop))
     .map(s => s.session)
     .filter(s => !clipSessions.includes(s));
   const sessions = [...new Set([...clipSessions, ...longOnly])].sort();

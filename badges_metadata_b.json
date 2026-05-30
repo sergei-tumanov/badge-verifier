@@ -403,7 +403,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 1,
-    "_b_dialog_name": "⚠️ 1. Продажа iPhone: чехол, зарядка"
+    "_b_dialog_name": "⚠️ 1. Продажа iPhone: чехол, зарядка",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_009",
@@ -729,7 +730,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 9,
-    "_b_dialog_name": "1. Продажа iPhone: чехол, зарядка"
+    "_b_dialog_name": "1. Продажа iPhone: чехол, зарядка",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_002",
@@ -1135,7 +1137,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 2,
-    "_b_dialog_name": "⚠️ 2. Выдача заказа и код получения / Проверка"
+    "_b_dialog_name": "⚠️ 2. Выдача заказа и код получения / Проверка",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_010",
@@ -1581,7 +1584,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 10,
-    "_b_dialog_name": "2. Выдача заказа Ч1"
+    "_b_dialog_name": "2. Выдача заказа Ч1",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_003",
@@ -1957,7 +1961,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 3,
-    "_b_dialog_name": "⚠️ 3. Статус доставки (СДЭК) / Запрос по заказ"
+    "_b_dialog_name": "⚠️ 3. Статус доставки (СДЭК) / Запрос по заказ",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_011",
@@ -2083,7 +2088,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 11,
-    "_b_dialog_name": "3. Заказ для Георгия"
+    "_b_dialog_name": "3. Заказ для Георгия",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_012",
@@ -2259,7 +2265,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 12,
-    "_b_dialog_name": "4. Выдача заказа Ч2"
+    "_b_dialog_name": "4. Выдача заказа Ч2",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_004",
@@ -2655,7 +2662,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 4,
-    "_b_dialog_name": "4. Разговор с покупателем (вход/т"
+    "_b_dialog_name": "4. Разговор с покупателем (вход/т",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_005",
@@ -4281,7 +4289,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 5,
-    "_b_dialog_name": "5. Консультация по iPhone, цветам / Оформле"
+    "_b_dialog_name": "5. Консультация по iPhone, цветам / Оформле",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_013",
@@ -5157,7 +5166,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 13,
-    "_b_dialog_name": "5. Продажа iPhone"
+    "_b_dialog_name": "5. Продажа iPhone",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_014",
@@ -5533,7 +5543,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 14,
-    "_b_dialog_name": "6. Наклейка стекла, пленки"
+    "_b_dialog_name": "6. Наклейка стекла, пленки",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_006",
@@ -5709,7 +5720,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 6,
-    "_b_dialog_name": "⚠️ 6. Наклейка пленки, защита камеры"
+    "_b_dialog_name": "⚠️ 6. Наклейка пленки, защита камеры",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_007",
@@ -6015,7 +6027,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 7,
-    "_b_dialog_name": "⚠️ 7. Промо, бонусы, память и Apple"
+    "_b_dialog_name": "⚠️ 7. Промо, бонусы, память и Apple",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_015",
@@ -6701,7 +6714,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 15,
-    "_b_dialog_name": "7. Покупка iPhone + перенос"
+    "_b_dialog_name": "7. Покупка iPhone + перенос",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_008",
@@ -7807,7 +7821,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 8,
-    "_b_dialog_name": "8. Перенос, смена региона и iClou / Аксессу"
+    "_b_dialog_name": "8. Перенос, смена региона и iClou / Аксессу",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2710df9e782c08e55adb_016",
@@ -8093,7 +8108,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2710df9e782c08e55adb",
     "_b_dialog_id": 16,
-    "_b_dialog_name": "8. Подарочная карта и смена региона аккаунта"
+    "_b_dialog_name": "8. Подарочная карта и смена региона аккаунта",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_025",
@@ -9109,7 +9125,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 25,
-    "_b_dialog_name": "1. Айфон"
+    "_b_dialog_name": "1. Айфон",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_020",
@@ -10095,7 +10112,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 20,
-    "_b_dialog_name": "2. Подбор планшета для учебы"
+    "_b_dialog_name": "2. Подбор планшета для учебы",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_021",
@@ -10241,7 +10259,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 21,
-    "_b_dialog_name": "3. Вопрос про наушники"
+    "_b_dialog_name": "3. Вопрос про наушники",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_022",
@@ -11017,7 +11036,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 22,
-    "_b_dialog_name": "4. Зарядка + наушники + куча вопросов"
+    "_b_dialog_name": "4. Зарядка + наушники + куча вопросов",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_023",
@@ -11163,7 +11183,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 23,
-    "_b_dialog_name": "5. догонка предыдущего"
+    "_b_dialog_name": "5. догонка предыдущего",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_024",
@@ -11949,7 +11970,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 24,
-    "_b_dialog_name": "6. Новый телефон + перенос"
+    "_b_dialog_name": "6. Новый телефон + перенос",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_017",
@@ -12025,7 +12047,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 17,
-    "_b_dialog_name": "7. Подбор по размерам/модель"
+    "_b_dialog_name": "7. Подбор по размерам/модель",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e277fdf9e782c08e55adc_019",
@@ -12141,7 +12164,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e277fdf9e782c08e55adc",
     "_b_dialog_id": 19,
-    "_b_dialog_name": "8. Кабель 1/2 м — цена и наличие"
+    "_b_dialog_name": "8. Кабель 1/2 м — цена и наличие",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_001",
@@ -12187,7 +12211,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 1,
-    "_b_dialog_name": "1. App Store и подписки"
+    "_b_dialog_name": "1. App Store и подписки",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_002",
@@ -13143,7 +13168,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 2,
-    "_b_dialog_name": "2. Подарок для музыканта"
+    "_b_dialog_name": "2. Подарок для музыканта",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_003",
@@ -13309,7 +13335,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 3,
-    "_b_dialog_name": "3. Продажа зарядки и оплата"
+    "_b_dialog_name": "3. Продажа зарядки и оплата",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_004",
@@ -13435,7 +13462,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 4,
-    "_b_dialog_name": "4. Заявка на Samsung S25 Ultra"
+    "_b_dialog_name": "4. Заявка на Samsung S25 Ultra",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_005",
@@ -13661,7 +13689,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 5,
-    "_b_dialog_name": "5. Выбор чехла и покупка"
+    "_b_dialog_name": "5. Выбор чехла и покупка",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_006",
@@ -13767,7 +13796,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 6,
-    "_b_dialog_name": "6. Замена зарядки"
+    "_b_dialog_name": "6. Замена зарядки",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_007",
@@ -13863,7 +13893,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 7,
-    "_b_dialog_name": "7. Наличие товара"
+    "_b_dialog_name": "7. Наличие товара",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_008",
@@ -14159,7 +14190,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 8,
-    "_b_dialog_name": "8. Консультация по наушникам"
+    "_b_dialog_name": "8. Консультация по наушникам",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_009",
@@ -14235,7 +14267,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 9,
-    "_b_dialog_name": "9. Переходник для Mac"
+    "_b_dialog_name": "9. Переходник для Mac",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_010",
@@ -14301,7 +14334,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 10,
-    "_b_dialog_name": "10. Покупка iCloud/подарочной карты"
+    "_b_dialog_name": "10. Покупка iCloud/подарочной карты",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_011",
@@ -14957,7 +14991,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 11,
-    "_b_dialog_name": "11. iPhone 17 Pro и аксессуары"
+    "_b_dialog_name": "11. iPhone 17 Pro и аксессуары",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_012",
@@ -16013,7 +16048,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 12,
-    "_b_dialog_name": "12. Выбор iPhone и чехла"
+    "_b_dialog_name": "12. Выбор iPhone и чехла",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_013",
@@ -16299,7 +16335,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 13,
-    "_b_dialog_name": "13. Подбор товара и доставка"
+    "_b_dialog_name": "13. Подбор товара и доставка",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_014",
@@ -16395,7 +16432,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 14,
-    "_b_dialog_name": "14. Выдача онлайн-заказа"
+    "_b_dialog_name": "14. Выдача онлайн-заказа",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_015",
@@ -17831,7 +17869,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 15,
-    "_b_dialog_name": "15. Приглашение на презентацию"
+    "_b_dialog_name": "15. Приглашение на презентацию",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_016",
@@ -18487,7 +18526,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 16,
-    "_b_dialog_name": "16. Не пришел код покупки"
+    "_b_dialog_name": "16. Не пришел код покупки",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_017",
@@ -18643,7 +18683,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 17,
-    "_b_dialog_name": "17. Обращение по возврату"
+    "_b_dialog_name": "17. Обращение по возврату",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_018",
@@ -18699,7 +18740,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 18,
-    "_b_dialog_name": "18. Вопрос про разъем"
+    "_b_dialog_name": "18. Вопрос про разъем",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_019",
@@ -18725,7 +18767,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 19,
-    "_b_dialog_name": "19. Наличие книги"
+    "_b_dialog_name": "19. Наличие книги",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_020",
@@ -18761,7 +18804,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 20,
-    "_b_dialog_name": "20. Цена и остаток товара"
+    "_b_dialog_name": "20. Цена и остаток товара",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_021",
@@ -18887,7 +18931,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 21,
-    "_b_dialog_name": "21. Наушники и ремонт дисплея"
+    "_b_dialog_name": "21. Наушники и ремонт дисплея",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_022",
@@ -18963,7 +19008,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 22,
-    "_b_dialog_name": "22. Оформление чека"
+    "_b_dialog_name": "22. Оформление чека",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_023",
@@ -20579,7 +20625,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 23,
-    "_b_dialog_name": "23. Демонстрация робота"
+    "_b_dialog_name": "23. Демонстрация робота",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_024",
@@ -20655,7 +20702,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 24,
-    "_b_dialog_name": "24. Демонстрация ИИ-робота"
+    "_b_dialog_name": "24. Демонстрация ИИ-робота",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_025",
@@ -20771,7 +20819,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 25,
-    "_b_dialog_name": "25. Умное кольцо"
+    "_b_dialog_name": "25. Умное кольцо",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2866df9e782c08e55add_026",
@@ -20927,7 +20976,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2866df9e782c08e55add",
     "_b_dialog_id": 26,
-    "_b_dialog_name": "26. Поиск чека"
+    "_b_dialog_name": "26. Поиск чека",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_001",
@@ -21273,7 +21323,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 1,
-    "_b_dialog_name": "1. Цена, память и наличие стилуса / Проблем"
+    "_b_dialog_name": "1. Цена, память и наличие стилуса / Проблем",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_023",
@@ -21389,7 +21440,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 23,
-    "_b_dialog_name": "1. Вопрос про хуавей по акции со стилусом"
+    "_b_dialog_name": "1. Вопрос про хуавей по акции со стилусом",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_002",
@@ -21745,7 +21797,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 2,
-    "_b_dialog_name": "2. SIM/MMS и зарядные/аксессуары / Подбор у"
+    "_b_dialog_name": "2. SIM/MMS и зарядные/аксессуары / Подбор у",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_024",
@@ -21971,7 +22024,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 24,
-    "_b_dialog_name": "2. Настройка SIM"
+    "_b_dialog_name": "2. Настройка SIM",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_025",
@@ -22057,7 +22111,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 25,
-    "_b_dialog_name": "3. Обсуждение с клиентом нагревающегося телефона со слабым процессором"
+    "_b_dialog_name": "3. Обсуждение с клиентом нагревающегося телефона со слабым процессором",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_003",
@@ -22143,7 +22198,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 3,
-    "_b_dialog_name": "⚠️ 3. Описание товара: длина и цена"
+    "_b_dialog_name": "⚠️ 3. Описание товара: длина и цена",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_004",
@@ -22189,7 +22245,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 4,
-    "_b_dialog_name": "⚠️ 4. Наличие и цвет телефона"
+    "_b_dialog_name": "⚠️ 4. Наличие и цвет телефона",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_005",
@@ -22235,7 +22292,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 5,
-    "_b_dialog_name": "⚠️ 5. Приветствие и вопрос про накла"
+    "_b_dialog_name": "⚠️ 5. Приветствие и вопрос про накла",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_006",
@@ -22381,7 +22439,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 6,
-    "_b_dialog_name": "⚠️ 6. Повербанки, держатель и робот"
+    "_b_dialog_name": "⚠️ 6. Повербанки, держатель и робот",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_007",
@@ -22537,7 +22596,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 7,
-    "_b_dialog_name": "7. Вопросы по наличию и заказу / Продолжени"
+    "_b_dialog_name": "7. Вопросы по наличию и заказу / Продолжени",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_026",
@@ -22653,7 +22713,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 26,
-    "_b_dialog_name": "4. Запрос на перезвон при поступлении товара"
+    "_b_dialog_name": "4. Запрос на перезвон при поступлении товара",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_008",
@@ -23069,7 +23130,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 8,
-    "_b_dialog_name": "⚠️ 8. Показ телефонов/чехлов и оплат / Скан до"
+    "_b_dialog_name": "⚠️ 8. Показ телефонов/чехлов и оплат / Скан до",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_027",
@@ -23375,7 +23437,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 27,
-    "_b_dialog_name": "5. Покупка чехла"
+    "_b_dialog_name": "5. Покупка чехла",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_028",
@@ -23501,7 +23564,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 28,
-    "_b_dialog_name": "6. Сканирование документа и консультация по кольцам"
+    "_b_dialog_name": "6. Сканирование документа и консультация по кольцам",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_009",
@@ -23577,7 +23641,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 9,
-    "_b_dialog_name": "⚠️ 9. Заказ / модель Samsung (5 ульт"
+    "_b_dialog_name": "⚠️ 9. Заказ / модель Samsung (5 ульт",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_010",
@@ -23633,7 +23698,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 10,
-    "_b_dialog_name": "⚠️ 10. Приветствие и диагностика поло"
+    "_b_dialog_name": "⚠️ 10. Приветствие и диагностика поло",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_011",
@@ -23799,7 +23865,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 11,
-    "_b_dialog_name": "11. Показ часов и обсуждение лицен"
+    "_b_dialog_name": "11. Показ часов и обсуждение лицен",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_029",
@@ -23895,7 +23962,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 29,
-    "_b_dialog_name": "7. Консультация по майкрософт офис"
+    "_b_dialog_name": "7. Консультация по майкрософт офис",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_012",
@@ -23931,7 +23999,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 12,
-    "_b_dialog_name": "⚠️ 12. Вопрос про ЦУМ и цены"
+    "_b_dialog_name": "⚠️ 12. Вопрос про ЦУМ и цены",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_013",
@@ -23967,7 +24036,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 13,
-    "_b_dialog_name": "⚠️ 13. Наличие моделей (16 ГБ)"
+    "_b_dialog_name": "⚠️ 13. Наличие моделей (16 ГБ)",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_014",
@@ -24173,7 +24243,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 14,
-    "_b_dialog_name": "8. Получение заказа"
+    "_b_dialog_name": "8. Получение заказа",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_015",
@@ -24259,7 +24330,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 15,
-    "_b_dialog_name": "9. Консультация"
+    "_b_dialog_name": "9. Консультация",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_016",
@@ -24445,7 +24517,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 16,
-    "_b_dialog_name": "⚠️ 16. Выбор модели, цвет, чехол и оп"
+    "_b_dialog_name": "⚠️ 16. Выбор модели, цвет, чехол и оп",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_017",
@@ -25401,7 +25474,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 17,
-    "_b_dialog_name": "10. Выбор MacBook и перенос данных"
+    "_b_dialog_name": "10. Выбор MacBook и перенос данных",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_018",
@@ -26167,7 +26241,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 18,
-    "_b_dialog_name": "18. Тест и подбор наушников / Консультация п"
+    "_b_dialog_name": "18. Тест и подбор наушников / Консультация п",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_030",
@@ -26503,7 +26578,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 30,
-    "_b_dialog_name": "11. Подбор наушников"
+    "_b_dialog_name": "11. Подбор наушников",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_031",
@@ -26609,7 +26685,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 31,
-    "_b_dialog_name": "12. Консультация по мышкам"
+    "_b_dialog_name": "12. Консультация по мышкам",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_019",
@@ -26655,7 +26732,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 19,
-    "_b_dialog_name": "19. Объяснение про отсутствие RuSt"
+    "_b_dialog_name": "19. Объяснение про отсутствие RuSt",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_020",
@@ -26761,7 +26839,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 20,
-    "_b_dialog_name": "⚠️ 20. Обсуждение телефона и цены"
+    "_b_dialog_name": "⚠️ 20. Обсуждение телефона и цены",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_021",
@@ -26847,7 +26926,8 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 21,
-    "_b_dialog_name": "21. Объяснение трейд-ин"
+    "_b_dialog_name": "21. Объяснение трейд-ин",
+    "shop": "Электроника (Lazurit)"
   },
   {
     "audio_id": "b_6a0e2694df9e782c08e55ad8_022",
@@ -27533,6 +27613,7 @@
     "_source": "b-cut",
     "_parent_audio_id": "6a0e2694df9e782c08e55ad8",
     "_b_dialog_id": 22,
-    "_b_dialog_name": "22. Помощь с SIM и учеткой / Настройка учётк"
+    "_b_dialog_name": "22. Помощь с SIM и учеткой / Настройка учётк",
+    "shop": "Электроника (Lazurit)"
   }
 ]
