@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бейджи — итоговый пайплайн и результаты</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #f7f8fa;
+    --text: #111;
+    --muted: #555;
+    --border: #e2e5ea;
+    --accent: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --orange: #d97706;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 96px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--text); }
+  h3 { font-size: 16px; margin: 24px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .lead { color: var(--muted); margin: 0 0 8px; font-size: 14px; }
+  .meta { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+  a { color: var(--accent); }
+  a:hover { text-decoration: underline; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 14px; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  th { background: var(--panel); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.pct { color: var(--muted); }
+  .hyp { display: grid; grid-template-columns: 28px 1fr; gap: 10px; margin: 6px 0; padding: 10px 12px; border-radius: 6px; background: var(--panel); }
+  .hyp.ok { background: #ecfdf5; }
+  .hyp.no { background: #fef2f2; }
+  .hyp.mb { background: #fffbeb; }
+  .hyp .icon { font-size: 18px; line-height: 1.5; }
+  .hyp h4 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+  .hyp p { margin: 0; color: var(--muted); font-size: 13px; }
+  .step {
+    display: grid; grid-template-columns: 32px 1fr 100px; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .step:last-of-type { border-bottom: 0; }
+  .step .num { font-weight: 700; font-size: 20px; color: var(--accent); }
+  .step h4 { margin: 0 0 4px; font-size: 15px; }
+  .step p { margin: 0; color: var(--muted); font-size: 13px; }
+  .step .cost { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cost.free { color: var(--muted); font-weight: 400; font-size: 13px; }
+  code { background: var(--panel); padding: 1px 6px; border-radius: 4px; font-size: 0.92em; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .pill.flex { background: #dbeafe; color: #1e40af; }
+  .pill.yandex { background: #fef3c7; color: #92400e; }
+  .pill.local { background: #e5e7eb; color: #374151; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 12px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .bar-wrap { background: var(--panel); border-radius: 4px; height: 18px; overflow: hidden; display: flex; }
+  .bar { height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; }
+  .bar.stt { background: #2563eb; }
+  .bar.b { background: #16a34a; }
+  .bar.diar { background: #d97706; }
+  .bar.other { background: #9ca3af; }
+  .callout { padding: 12px 16px; border-left: 3px solid var(--accent); background: var(--panel); margin: 12px 0; font-size: 14px; }
+  .callout.bug { border-left-color: var(--red); background: #fef2f2; }
+  .callout.warn { border-left-color: var(--orange); background: #fffbeb; }
+  ul.tight { margin: 4px 0 12px; padding-left: 22px; }
+  ul.tight li { margin: 3px 0; font-size: 14px; }
+  .footer { color: var(--muted); font-size: 12px; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Бейджи — обработка одной сессии</h1>
+  <p class="lead">Итоговый пайплайн обработки длинной аудиозаписи с бейджа продавца: транскрибация → диаризация → детекция диалогов → уточняющая диаризация.</p>
+  <p class="meta">Обновлено 30.05.2026 · Серёжа Туманов · <a href="/" target="_blank">Открыть валидатор</a></p>
+
+  <!-- ==================== HYPOTHESES ==================== -->
+  <h2>Гипотезы — что сработало / нет</h2>
+
+  <h3>Сработало</h3>
+
+  <div class="hyp ok">
+    <div class="icon">✅</div>
+    <div>
+      <h4>B как auto-сегментатор диалогов на чистых сессиях</h4>
+      <p>На 3 из 4 GT-сессий (s1/s2/s3) границы B (V01_BASELINE × gpt-5.5) совпадают с ручной разметкой 100%. Модель есть, работает.</p>
+    </div>
+  </div>
+
+  <div class="hyp ok">
+    <div class="icon">✅</div>
+    <div>
+      <h4>Акустика (rms/centroid/voicing) НА УЗКОМ КОНТЕКСТЕ (B-окно)</h4>
+      <p>В re-диаризации gpt-5-mini в пределах одного диалога — даёт прирост: отличает шёпот клиента от далёкой болтовни коллег.</p>
+    </div>
+  </div>
+
+  <div class="hyp ok">
+    <div class="icon">✅</div>
+    <div>
+      <h4>Сплит сегментов LLM на N.1/N.2 для склеек</h4>
+      <p>Yandex иногда склеивает реплики разных спикеров в один сегмент. LLM разбивает с пропорциональным распределением таймстемпов. 29 сплитов на 64 B-окна.</p>
+    </div>
+  </div>
+
+  <div class="hyp ok">
+    <div class="icon">✅</div>
+    <div>
+      <h4>Первичная LLM-диаризация по полной транскрипции</h4>
+      <p>gpt-5-mini на plain text всей сессии — чинит сломанную продовую диаризацию Most AI (на s1 и s4 в проде ВСЕ сегменты помечены одним спикером).</p>
+    </div>
+  </div>
+
+  <h3>Частично</h3>
+
+  <div class="hyp mb">
+    <div class="icon">⚠️</div>
+    <div>
+      <h4>B на «грязных» сессиях с фоновой болтовнёй</h4>
+      <p>На s4 (Ларькин 359m, ругань в фоне, внутренние разговоры): B даёт 26 окон vs 22 GT, только 10 совпали. Точность падает на шумных файлах.</p>
+    </div>
+  </div>
+
+  <h3>Не сработало</h3>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Резка по диалогам + повторная транскрибация Yandex даёт лучший текст</h4>
+      <p>Прогон на 77 GT-окнах: token-similarity к проду 0.72–0.86, словарный объём ±8%. Yandex на узком клипе даёт ±тот же текст. <b>Повторная транскрибация выкинута из пайплайна — экономия ₽0.32/мин.</b></p>
+    </div>
+  </div>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Акустика в первичной LLM-диаризации полной транскрипции</h4>
+      <p>Эксперимент «voice_enrichment_ab» — отрицательный. На широком контексте акустика только мешает: цифры по сегментам разреженно ложатся на 1000+ записей. Plain text работает лучше.</p>
+    </div>
+  </div>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Акустика как вход в детектор диалогов B</h4>
+      <p>B видит только plain text + [CLIP]-метки авторазбивателя. Попытки добавить акустические признаки в input не улучшили детекцию.</p>
+    </div>
+  </div>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Recall-helper промпт для поиска пропущенных диалогов</h4>
+      <p>Эксперимент 5 «recall_minimal_ab» — отрицательный. Доп. промпт «найди ещё диалоги после первичной разметки» не дал прироста recall’а.</p>
+    </div>
+  </div>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Retail-типология (V_USER prompt с категориями продаж)</h4>
+      <p>Эксперимент 3 «retail_prompt_ab» — отрицательный. Привязка к типам диалогов (Apple-консультация / возврат / выдача заказа) не улучшила границы.</p>
+    </div>
+  </div>
+
+  <div class="hyp no">
+    <div class="icon">❌</div>
+    <div>
+      <h4>Boundaries-only промпт (V_BOUND изолированно)</h4>
+      <p>Эксперимент 4 «boundaries_only_ab» — 5 регрессий на 5 GT-окнах. Фокус на границах без задачи поиска даёт хуже.</p>
+    </div>
+  </div>
+
+  <h3>Открыто / для дальнейших экспериментов</h3>
+
+  <div class="hyp">
+    <div class="icon">🔍</div>
+    <div>
+      <h4>Yandex Restore RC (deferred-general:rc) вместо обычного deferred-general</h4>
+      <p>Через GenAI Hub не отдаётся. Нужно прямое обращение к Yandex SpeechKit V3 (есть IAM-токен в most-ai cloud). Может улучшить качество распознавания, особенно на «грязных» сессиях типа s4.</p>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <div class="icon">🔍</div>
+    <div>
+      <h4>Word-level сплит вместо проп-char</h4>
+      <p>Сейчас при сплите сегмента таймстемпы делим пропорционально длине текста. Можно точнее — по word-level timestamps от Yandex (они есть в response).</p>
+    </div>
+  </div>
+
+  <!-- ==================== PIPELINE ==================== -->
+  <h2>Пайплайн (6 шагов)</h2>
+  <p class="lead">На вход — длинный WAV с бейджа (1–6 ч). На выход — список диалогов + транскрипция каждого с ролями.</p>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h4>Audio ingestion</h4>
+      <p>Скачать WAV с CDN → ffmpeg → opus 32k mono 16kHz → разбить на чанки по 20 мин (хаб таймаутит на opus >30 МБ).
+      <span class="pill local">local</span></p>
+    </div>
+    <div class="cost free">0</div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h4>STT — Yandex SpeechKit</h4>
+      <p>Каждый чанк → <code>yandex/deferred-general</code> через Most GenAI Hub. Получаем text + segments + word-level timestamps. Склейка чанков с глобальными ms.
+      <span class="pill yandex">yandex</span></p>
+    </div>
+    <div class="cost">₽0.32/мин</div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h4>Первичная LLM-диаризация (по всей сессии)</h4>
+      <p>Plain text + timestamps (без акустики!) → <code>gpt-5-mini</code> flex назначает Консультант/Клиент каждому сегменту. <b>Чинит проды баг диаризации на s1/s4.</b>
+      <span class="pill flex">gpt-5-mini · flex</span></p>
+    </div>
+    <div class="cost">₽0.002/мин</div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div>
+      <h4>Dialog detection (модель B)</h4>
+      <p>Транскрипт чанками по 30 мин → <code>gpt-5.5</code> flex с промптом V01_BASELINE. Plain text only. Output: <code>dialogs[{leftStartMs, leftEndMs, name, confidence}]</code>. Дедуп пересечений.
+      <span class="pill flex">gpt-5.5 · flex</span></p>
+    </div>
+    <div class="cost">₽0.04/мин</div>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <div>
+      <h4>Acoustic enrichment</h4>
+      <p>Только для сегментов внутри B-окон: считаем rms_db, centroid_hz, voicing, mgr_strict_pct, speaker_hint, gap_before_ms из raw-аудио.
+      <span class="pill local">local CPU</span></p>
+    </div>
+    <div class="cost free">0</div>
+  </div>
+
+  <div class="step">
+    <div class="num">6</div>
+    <div>
+      <h4>Re-диаризация внутри B-окон</h4>
+      <p>Сегменты окна + акустика + timestamps → <code>gpt-5-mini</code> flex с badge-context промптом. Уточняет роли (узкий контекст + физические признаки), при необходимости разрезает склеенный сегмент на N.1/N.2.
+      <span class="pill flex">gpt-5-mini · flex</span></p>
+    </div>
+    <div class="cost">₽0.008/мин</div>
+  </div>
+
+  <p class="lead" style="margin-top:18px;">
+    На выходе: длинный транскрипт с корректной диаризацией + 20–30 диалоговых окон/сессия с уточнённой разметкой и тематикой. Готово к заливке в Most AI как «звонки» для скоринга.
+  </p>
+
+  <div class="callout bug">
+    <strong>🐛 Найденный продовый баг:</strong> диаризация Most AI на s1 и s4 не работает — все 859/1079 сегментов помечены одним спикером (Кон / усечённое «Спи»). На s2/s3 работает. Наш Step 3 обходит этот баг через свою LLM-диаризацию, но в продовый пайплайн нужен фикс отдельно.
+  </div>
+
+  <div class="callout warn">
+    <strong>📦 Лимит хаба:</strong> genai-hub.the-most.ai таймаутит на opus &gt;30 МБ (curl 56 / SSL_ERROR_SYSCALL). Безопасный чанк — 20 мин. Возможный фикс — увеличить таймаут или раздробить на стороне хаба.
+  </div>
+
+  <!-- ==================== UNIT ECONOMICS ==================== -->
+  <h2>Unit-экономика</h2>
+  <p class="lead">Публичные цены: Yandex SpeechKit async с корпоративной скидкой 20%, OpenAI flex tier (−50% от standard), курс ₽90/$.</p>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Что</th><th>Модель</th><th>Юнит-цена</th><th class="num">₽ / мин аудио</th><th class="num">% от total</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2</td>
+        <td>STT</td>
+        <td>yandex/deferred-general</td>
+        <td>₽0.40/мин × 0.8</td>
+        <td class="num"><b>0.320</b></td>
+        <td class="num pct">86%</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Первичная диаризация</td>
+        <td>gpt-5-mini (flex)</td>
+        <td>$0.125 / $1 за 1M tok</td>
+        <td class="num"><b>0.002</b></td>
+        <td class="num pct">&lt;1%</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Dialog detection B</td>
+        <td>gpt-5.5 (flex)</td>
+        <td>$0.625 / $5 за 1M tok</td>
+        <td class="num"><b>0.040</b></td>
+        <td class="num pct">11%</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Re-диаризация</td>
+        <td>gpt-5-mini (flex)</td>
+        <td>$0.125 / $1 за 1M tok</td>
+        <td class="num"><b>0.008</b></td>
+        <td class="num pct">2%</td>
+      </tr>
+      <tr>
+        <td>1, 5</td>
+        <td>ffmpeg + librosa</td>
+        <td>local CPU</td>
+        <td>—</td>
+        <td class="num">~0</td>
+        <td class="num pct">&lt;1%</td>
+      </tr>
+      <tr style="font-weight:600;border-top:2px solid var(--text);">
+        <td colspan="4">Итого</td>
+        <td class="num"><b>₽0.37</b></td>
+        <td class="num pct">100%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Доли стоимости</h3>
+  <div class="bar-wrap">
+    <div class="bar stt" style="width:86%">STT 86%</div>
+    <div class="bar b" style="width:11%">B 11%</div>
+    <div class="bar diar" style="width:2%">2%</div>
+    <div class="bar other" style="width:1%"></div>
+  </div>
+
+  <h3>Стоимость по длине сессии</h3>
+  <table>
+    <thead><tr><th>Длительность</th><th>Описание</th><th class="num">Стоимость</th></tr></thead>
+    <tbody>
+      <tr><td>1 ч</td><td>Короткая смена</td><td class="num"><b>₽22</b></td></tr>
+      <tr><td>3 ч</td><td>Стандартная смена</td><td class="num"><b>₽66</b></td></tr>
+      <tr><td>6 ч</td><td>Длинная смена (тип Ларькин 359m)</td><td class="num"><b>₽132</b></td></tr>
+      <tr><td>8 ч</td><td>Полный рабочий день (worst case)</td><td class="num"><b>₽176</b></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Что экономит модель</h3>
+  <ul class="tight">
+    <li><b>−₽0.32/мин</b> от выкинутой повторной транскрибации Yandex (v1 → v2): −86% от пайплайна, который изначально стоил бы ₽0.69/мин.</li>
+    <li><b>−50%</b> на всех LLM-вызовах за счёт flex tier (gpt-5.5 и gpt-5-mini).</li>
+    <li><b>−20%</b> от корпоративной скидки Yandex.</li>
+  </ul>
+
+  <div class="footer">
+    Источники: <a href="https://github.com/sergei-tumanov/badge-verifier" target="_blank">репа валидатора</a> · <a href="/" target="_blank">live валидатор (B-cuts)</a> · отчёт по экспериментам B/C/D — в Notion-задаче.
+  </div>
+</div>
+</body>
+</html>
